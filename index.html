@@ -376,7 +376,7 @@
   </div>
   <div id="err_op_gas" class="error-msg">Seleziona il tipo di operazione per continuare.</div>
   <div class="btn-row">
-    <button class="btn-back" onclick="goTo('operazione_luce')">‹ Indietro</button>
+    <button class="btn-back" onclick="backFromOpGas()">‹ Indietro</button>
     <button class="btn-primary" onclick="validateOpGas()">Avanti ›</button>
   </div>
 </div>
@@ -502,11 +502,26 @@
 
   <div class="btn-row">
     <button class="btn-back" onclick="backFromBolletta()">‹ Indietro</button>
-    <button class="btn-primary" onclick="validateBolletta()">Prenota la tua consulenza ›</button>
+    <button class="btn-primary" onclick="validateBolletta()">Avanti ›</button>
   </div>
 </div>
 
-<!-- ═══ STEP 8b — CALENDLY ═══ -->
+<!-- ═══ STEP 8b — RISPARMIO STIMATO (solo Cambio Fornitore) ═══ -->
+<div class="card" id="step_risparmio_stimato" style="display:none">
+  <div class="eyebrow">Buone notizie</div>
+  <div class="display">Il tuo risparmio stimato</div>
+  <p class="subtitle" id="risparmioStimatoSubtitle" style="margin-bottom:16px;"></p>
+  <div class="agevolazione-block" id="risparmioStimatoBox"></div>
+  <div class="info-block" style="margin-top:8px;">
+    È una stima indicativa basata sui dati che hai inserito. Nella consulenza calcoliamo il risparmio esatto sulla tua bolletta.
+  </div>
+  <div class="btn-row" style="margin-top:24px;">
+    <button class="btn-back" onclick="goTo('bolletta_cf')">‹ Indietro</button>
+    <button class="btn-primary" onclick="inviaEVaiCalendly()">Prenota la tua consulenza ›</button>
+  </div>
+</div>
+
+<!-- ═══ STEP 8c — CALENDLY ═══ -->
 <div class="card" id="step_calendly" style="display:none">
   <div class="eyebrow">Prenota</div>
   <div class="display">Scegli il momento migliore per Te</div>
@@ -562,7 +577,7 @@ const STEP_PROGRESS = {
   utilizzo_luce: 3, utilizzo_gas: 3,
   agevolazioni: 3,
   servizio: 4, proposta: 4,
-  bolletta_cf: 4, calendly: 4
+  bolletta_cf: 4, risparmio_stimato: 4, calendly: 4
 };
 
 const STEP_LABELS = { 1:'Chi sei e cosa ti serve', 2:'Tipo di operazione', 3:'Utilizzo', 4:'La tua proposta' };
@@ -647,6 +662,11 @@ function validateOpGas() {
 
 function backFromOpLuce() {
   if (state.commodity.includes('Gas') && !state.commodity.includes('Luce')) goTo('commodity');
+  else goTo('commodity');
+}
+
+function backFromOpGas() {
+  if (state.commodity.includes('Luce')) goTo('operazione_luce');
   else goTo('commodity');
 }
 
@@ -962,7 +982,45 @@ function validateBolletta() {
     checkNum('gas_consumo_annuo',  'gas_consumo_annuo');
   }
 
-  if (valid) inviaEVaiCalendly();
+  if (valid) mostraRisparmioStimato();
+}
+
+// ── STIMA RISPARMIO (range indicativo 10-20%, non un calcolo puntuale) ──
+function mostraRisparmioStimato() {
+  const luceCF = document.getElementById('bollettaLuceSection').style.display !== 'none';
+  const gasCF  = document.getElementById('bollettaGasSection').style.display  !== 'none';
+
+  let spesaVendita = 0;
+  const componenti = [];
+
+  if (luceCF) {
+    const spesa = parseFloat(state.luce_prezzo_vendita) * parseFloat(state.luce_consumo_annuo);
+    if (!isNaN(spesa) && spesa > 0) { spesaVendita += spesa; componenti.push('Energia'); }
+  }
+  if (gasCF) {
+    const spesa = parseFloat(state.gas_prezzo_vendita) * parseFloat(state.gas_consumo_annuo);
+    if (!isNaN(spesa) && spesa > 0) { spesaVendita += spesa; componenti.push('Gas'); }
+  }
+
+  if (spesaVendita <= 0 || componenti.length === 0) {
+    // Dati insufficienti per una stima credibile: salta lo step e vai diretto a Calendly.
+    inviaEVaiCalendly();
+    return;
+  }
+
+  const min = Math.round(spesaVendita * 0.10);
+  const max = Math.round(spesaVendita * 0.20);
+  const label = componenti.join(' e ');
+
+  document.getElementById('risparmioStimatoSubtitle').textContent =
+    'In base ai consumi che hai indicato sulla componente ' + label + ', ecco una stima di quanto potresti risparmiare passando alle nostre tariffe.';
+  document.getElementById('risparmioStimatoBox').innerHTML = `
+    <div class="agevolazione-title">💶 Risparmio stimato</div>
+    Tra <strong>${min} € e ${max} € all'anno</strong> sulla componente ${label} —
+    una stima prudente, tra il 10% e il 20% della spesa per la vendita di ${label}.
+  `;
+
+  goTo('risparmio_stimato');
 }
 
 function inviaEVaiCalendly() {
