@@ -1,6 +1,6 @@
 {
   "_nota": "Dati di mercato pubblici (indici energia/gas). Aggiornati manualmente da Giulio ogni mese/trimestre. Nessun dato di margine o offerta qui.",
-  "aggiornato_il": "2026-07-14",
+  "aggiornato_il": "2026-07-15",
   "pun_corrente": 0,
   "psv_corrente": 0,
   "psbil_corrente": 0,
@@ -198,7 +198,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 46.576,
+      "ttf": 52.959,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -210,7 +210,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 46.804,
+      "ttf": 53.166,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -222,7 +222,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 46.765,
+      "ttf": 53.123,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -234,7 +234,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 46.165,
+      "ttf": 52.568,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -246,7 +246,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 46,
+      "ttf": 52.388,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -258,7 +258,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 45.628,
+      "ttf": 52.058,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -270,7 +270,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 44.827,
+      "ttf": 50.971,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -282,7 +282,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 42.453,
+      "ttf": 48.015,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -294,7 +294,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 31.122,
+      "ttf": 41.34,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -306,7 +306,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 33.684,
+      "ttf": 38.2,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -318,7 +318,19 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 33.042,
+      "ttf": 37.366,
+      "cdispd": 0.019902,
+      "dispacciamento": 0.0105,
+      "capacity_mkt": 0.005589
+    },
+    {
+      "mese": "Lug 2027",
+      "pun": 0,
+      "psv": 0,
+      "psbil": 0,
+      "psv_mwh": 0,
+      "psbil_mwh": 0,
+      "ttf": 36.941,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
