@@ -172,13 +172,13 @@
   /* FORM FIELDS */
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: .75rem; font-weight: 600; color: var(--grey-700); margin-bottom: 6px; letter-spacing: .02em; }
-  .field input {
+  .field input, .field select {
     width: 100%; padding: 12px 14px; border: 1.5px solid var(--grey-200);
     border-radius: var(--radius-sm); font-size: .88rem; font-family: inherit;
     color: var(--grey-700); background: var(--white); transition: border-color var(--trans);
   }
-  .field input:focus { outline: none; border-color: var(--blu); }
-  .field input.error { border-color: #EF4444; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--blu); }
+  .field input.error, .field select.error { border-color: #EF4444; }
   .field-error { display: block; font-size: .72rem; color: #EF4444; margin-top: 4px; min-height: 16px; }
 
   /* PRIVACY */
@@ -476,6 +476,21 @@
       <input type="number" id="luce_consumo_annuo" placeholder="es. 3200"/>
       <span class="field-error" id="err_luce_consumo_annuo"></span>
     </div>
+    <div class="field">
+      <label>Tipo fatturazione</label>
+      <div style="display:flex;gap:8px;">
+        <div class="choice-card" id="luce_fatt_mensile" onclick="setFatturazione('luce','Mensile')" style="flex:1;padding:10px;text-align:center;cursor:pointer;">Mensile</div>
+        <div class="choice-card" id="luce_fatt_bimestrale" onclick="setFatturazione('luce','Bimestrale')" style="flex:1;padding:10px;text-align:center;cursor:pointer;">Bimestrale</div>
+      </div>
+    </div>
+    <div class="field">
+      <label id="luce_mese_comp_label">Mese di competenza (dalla bolletta)</label>
+      <select id="luce_mese_competenza" onchange="setMeseCompetenza('luce', this.value)">
+        <option value="">— seleziona —</option>
+      </select>
+      <span class="field-error" id="err_luce_mese_competenza"></span>
+      <div style="font-size:.72rem;color:var(--grey-400);margin-top:4px;" id="luce_mese_comp_info"></div>
+    </div>
   </div>
 
   <div id="bollettaGasSection" style="display:none">
@@ -498,6 +513,21 @@
       <input type="number" id="gas_consumo_annuo" placeholder="es. 1200"/>
       <span class="field-error" id="err_gas_consumo_annuo"></span>
     </div>
+    <div class="field">
+      <label>Tipo fatturazione</label>
+      <div style="display:flex;gap:8px;">
+        <div class="choice-card" id="gas_fatt_mensile" onclick="setFatturazione('gas','Mensile')" style="flex:1;padding:10px;text-align:center;cursor:pointer;">Mensile</div>
+        <div class="choice-card" id="gas_fatt_bimestrale" onclick="setFatturazione('gas','Bimestrale')" style="flex:1;padding:10px;text-align:center;cursor:pointer;">Bimestrale</div>
+      </div>
+    </div>
+    <div class="field">
+      <label id="gas_mese_comp_label">Mese di competenza (dalla bolletta)</label>
+      <select id="gas_mese_competenza" onchange="setMeseCompetenza('gas', this.value)">
+        <option value="">— seleziona —</option>
+      </select>
+      <span class="field-error" id="err_gas_mese_competenza"></span>
+      <div style="font-size:.72rem;color:var(--grey-400);margin-top:4px;" id="gas_mese_comp_info"></div>
+    </div>
   </div>
 
   <div class="btn-row">
@@ -508,12 +538,12 @@
 
 <!-- ═══ STEP 8b — RISPARMIO STIMATO (solo Cambio Fornitore) ═══ -->
 <div class="card" id="step_risparmio_stimato" style="display:none">
-  <div class="eyebrow">Buone notizie</div>
+  <div class="eyebrow">La tua stima</div>
   <div class="display">Il tuo risparmio stimato</div>
   <p class="subtitle" id="risparmioStimatoSubtitle" style="margin-bottom:16px;"></p>
-  <div class="agevolazione-block" id="risparmioStimatoBox"></div>
+  <div id="risparmioStimatoBox"></div>
   <div class="info-block" style="margin-top:8px;">
-    È una stima indicativa basata sui dati che hai inserito. Nella consulenza calcoliamo il risparmio esatto sulla tua bolletta.
+    Stima calcolata sui dati di mercato aggiornati e sui consumi che hai indicato — al variare dei consumi può variare anche la stima di risparmio. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.
   </div>
   <div class="btn-row" style="margin-top:24px;">
     <button class="btn-back" onclick="goTo('bolletta_cf')">‹ Indietro</button>
@@ -548,11 +578,154 @@ const state = {
   produzione_gas: false,
   // bolletta CF
   luce_quota_fissa: '', luce_prezzo_vendita: '', luce_potenza: '', luce_consumo_annuo: '',
+  luce_fatturazione_tipo: '', luce_mese_competenza: '',
   gas_quota_fissa: '', gas_prezzo_vendita: '', gas_consumo_annuo: '',
+  gas_fatturazione_tipo: '', gas_mese_competenza: '',
   // servizio
   servizio_q1:'', servizio_q2:'', servizio_q3:'', servizio_q4:'', servizio_q5:'',
   servizio_score: 0, servizio_profilo: ''
 };
+
+// ═══════════════════════════════════════════
+// DATI DI MERCATO CONDIVISI — scaricati da GitHub (market-data.json),
+// dati pubblici (indici, nessun margine). Se il download fallisce, la
+// stima di risparmio reale non può essere calcolata: si torna al vecchio
+// step Calendly senza mostrare numeri inventati.
+// ═══════════════════════════════════════════
+const MARKET_DATA_URL = 'https://giuliopadoan.github.io/configuratore/market-data.json';
+let datiMercatoRemoti = null;
+const datiMercatoRemotiPromise = fetch(MARKET_DATA_URL)
+  .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+  .then(d => { datiMercatoRemoti = d; })
+  .catch(e => console.warn('Dati di mercato non disponibili:', e.message));
+
+// ── Funzioni di calcolo indici (stesse di Qualifica/simulatori) ──────
+const MESI_ORDINE = { gen:0, feb:1, mar:2, apr:3, mag:4, giu:5, lug:6, ago:7, set:8, ott:9, nov:10, dic:11 };
+function mesePosizione(meseStr) {
+  if (!meseStr) return 999999;
+  const parts = meseStr.trim().split(/\s+/);
+  if (parts.length < 2) return 999999;
+  const abbr = parts[0].toLowerCase().slice(0,3);
+  const anno = parseInt(parts[1], 10);
+  const m = MESI_ORDINE[abbr];
+  if (m === undefined || isNaN(anno)) return 999999;
+  return anno * 12 + m;
+}
+function getTrimestre(meseStr) {
+  const pos = mesePosizione(meseStr) % 12;
+  const trimestre = Math.floor(pos / 3) + 1;
+  const parts = meseStr.trim().split(/\s+/);
+  return { anno: parseInt(parts[1], 10), trimestre };
+}
+function meseSuccessivo(meseStr) {
+  if (!datiMercatoRemoti) return null;
+  const pos = mesePosizione(meseStr) + 1;
+  const row = datiMercatoRemoti.serie_storica.find(r => mesePosizione(r.mese) === pos);
+  return row ? row.mese : null;
+}
+function calcolaDelta(isPSVTTF) {
+  const oggi = new Date();
+  const posCorrente = oggi.getFullYear() * 12 + oggi.getMonth();
+  const deltas = []; const perTrimestre = {1:[],2:[],3:[],4:[]};
+  (datiMercatoRemoti.serie_storica || []).forEach(r => {
+    const pos = mesePosizione(r.mese);
+    if (pos < posCorrente) {
+      let a, b;
+      if (isPSVTTF) { a = r.psv_mwh||0; b = r.ttf||0; }
+      else { a = (r.pun||0)*1000; b = r.psv_mwh||0; }
+      if (a > 0 && b > 0) {
+        const delta = a - b;
+        deltas.push(delta);
+        const { trimestre } = getTrimestre(r.mese);
+        perTrimestre[trimestre].push(delta);
+      }
+    }
+  });
+  const media = deltas.length ? deltas.reduce((x,y)=>x+y,0)/deltas.length : 0;
+  const perTrimestreMedia = {};
+  [1,2,3,4].forEach(t => { const arr = perTrimestre[t]; perTrimestreMedia[t] = arr.length ? arr.reduce((x,y)=>x+y,0)/arr.length : null; });
+  return { media, perTrimestre: perTrimestreMedia };
+}
+function getDeltaStagionale(deltaObj, meseStr) {
+  const { trimestre } = getTrimestre(meseStr);
+  const t = deltaObj.perTrimestre[trimestre];
+  return (t !== null && t !== undefined) ? t : deltaObj.media;
+}
+function calcolaDeltaPSbilPSV() {
+  const oggi = new Date();
+  const posCorrente = oggi.getFullYear() * 12 + oggi.getMonth();
+  const deltas = [];
+  (datiMercatoRemoti.serie_storica || []).forEach(r => {
+    const pos = mesePosizione(r.mese);
+    if (pos < posCorrente && (r.psbil||0) > 0 && (r.psv||0) > 0) deltas.push(r.psbil - r.psv);
+  });
+  return deltas.length ? deltas.reduce((x,y)=>x+y,0)/deltas.length : 0;
+}
+function getValoreIndicePerMese(indice, meseStr) {
+  const row = (datiMercatoRemoti.serie_storica || []).find(r => r.mese === meseStr);
+  if (!row) return 0;
+  const deltaPT = calcolaDelta(true);
+  const deltaUP = calcolaDelta(false);
+  const deltaBP = calcolaDeltaPSbilPSV();
+  const psvMwh = (row.psv_mwh || 0) > 0 ? row.psv_mwh : ((row.ttf||0) > 0 ? row.ttf + getDeltaStagionale(deltaPT, meseStr) : 0);
+  if (indice === 'PUN') {
+    if ((row.pun||0) > 0) return row.pun;
+    return psvMwh > 0 ? (psvMwh + getDeltaStagionale(deltaUP, meseStr)) / 1000 : 0;
+  }
+  if (indice === 'PSbil') {
+    if ((row.psbil||0) > 0) return row.psbil;
+    return psvMwh > 0 ? (psvMwh / 93.54) + deltaBP : 0;
+  }
+  return 0;
+}
+function getMesiCompetenza(commodity) {
+  const mese = state[commodity + '_mese_competenza'];
+  if (!mese) return [];
+  if (state[commodity + '_fatturazione_tipo'] === 'Bimestrale') {
+    const secondo = meseSuccessivo(mese);
+    return secondo ? [mese, secondo] : [mese];
+  }
+  return [mese];
+}
+function getIndicePerMesi(indice, mesi) {
+  const valori = mesi.map(m => getValoreIndicePerMese(indice, m)).filter(v => v > 0);
+  if (valori.length === 0) return 0;
+  return valori.reduce((a,b) => a+b, 0) / valori.length;
+}
+function popolaMesiCompetenza() {
+  if (!datiMercatoRemoti) return;
+  const oggi = new Date();
+  const posCorrente = oggi.getFullYear() * 12 + oggi.getMonth();
+  const opzioni = datiMercatoRemoti.serie_storica
+    .filter(r => mesePosizione(r.mese) <= posCorrente)
+    .sort((a,b) => mesePosizione(a.mese) - mesePosizione(b.mese))
+    .map(r => `<option value="${r.mese}">${r.mese}</option>`).join('');
+  ['luce_mese_competenza','gas_mese_competenza'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) sel.innerHTML = '<option value="">— seleziona —</option>' + opzioni;
+  });
+}
+function setFatturazione(commodity, tipo) {
+  state[commodity + '_fatturazione_tipo'] = tipo;
+  document.getElementById(commodity + '_fatt_mensile').classList.toggle('selected', tipo === 'Mensile');
+  document.getElementById(commodity + '_fatt_bimestrale').classList.toggle('selected', tipo === 'Bimestrale');
+  const label = document.getElementById(commodity + '_mese_comp_label');
+  if (label) label.textContent = tipo === 'Bimestrale' ? 'Primo mese del bimestre (dalla bolletta)' : 'Mese di competenza (dalla bolletta)';
+  aggiornaMeseCompetenzaInfo(commodity);
+}
+function setMeseCompetenza(commodity, mese) {
+  state[commodity + '_mese_competenza'] = mese;
+  aggiornaMeseCompetenzaInfo(commodity);
+}
+function aggiornaMeseCompetenzaInfo(commodity) {
+  const info = document.getElementById(commodity + '_mese_comp_info');
+  if (!info) return;
+  const mese = state[commodity + '_mese_competenza'];
+  const tipo = state[commodity + '_fatturazione_tipo'];
+  if (!mese || tipo !== 'Bimestrale') { info.textContent = ''; return; }
+  const secondo = meseSuccessivo(mese);
+  info.textContent = secondo ? ('Bimestre: ' + mese + ' – ' + secondo) : 'Secondo mese del bimestre non disponibile — verrà usato solo ' + mese + '.';
+}
 
 const MAKE_WEBHOOK = 'https://hook.eu1.make.com/gl4m4a1d6sgy0d1wyets4dun68af16zs';
 const CALENDLY_URL = 'https://calendly.com/giulio-iltuoconsulentedifiducia-jtrt/30min';
@@ -941,6 +1114,7 @@ function goToDestinazione() {
     // Mostra sezioni bolletta appropriate
     document.getElementById('bollettaLuceSection').style.display = luceCF ? 'block' : 'none';
     document.getElementById('bollettaGasSection').style.display  = gasCF  ? 'block' : 'none';
+    datiMercatoRemotiPromise.then(popolaMesiCompetenza);
     goTo('bolletta_cf');
   } else {
     inviaEVaiCalendly();
@@ -970,55 +1144,99 @@ function validateBolletta() {
     }
   };
 
+  const checkMeseCompetenza = (commodity) => {
+    if (!state[commodity + '_fatturazione_tipo'] || !state[commodity + '_mese_competenza']) {
+      const errEl = document.getElementById('err_' + commodity + '_mese_competenza');
+      if (errEl) errEl.textContent = 'Indica tipo di fatturazione e mese di competenza.';
+      valid = false;
+    } else {
+      const errEl = document.getElementById('err_' + commodity + '_mese_competenza');
+      if (errEl) errEl.textContent = '';
+    }
+  };
+
   if (luceCF) {
     checkNum('luce_quota_fissa',    'luce_quota_fissa');
     checkNum('luce_prezzo_vendita', 'luce_prezzo_vendita');
     checkNum('luce_potenza',        'luce_potenza');
     checkNum('luce_consumo_annuo',  'luce_consumo_annuo');
+    checkMeseCompetenza('luce');
   }
   if (gasCF) {
     checkNum('gas_quota_fissa',    'gas_quota_fissa');
     checkNum('gas_prezzo_vendita', 'gas_prezzo_vendita');
     checkNum('gas_consumo_annuo',  'gas_consumo_annuo');
+    checkMeseCompetenza('gas');
   }
 
   if (valid) mostraRisparmioStimato();
 }
 
 // ── STIMA RISPARMIO (range indicativo 10-20%, non un calcolo puntuale) ──
+// Termine fisso di confronto (quota fissa nostra, €/mese) e spread per
+// commodity — vedi criteri forniti da Giulio: formula unica, non più
+// una stima percentuale generica.
+const QUOTA_FISSA_RIFERIMENTO = 12;
+const SPREAD_LUCE = 0.009;
+const SPREAD_GAS = 0.09;
+
+function calcolaRisparmioCommodity(commodity, indice, spread) {
+  const quotaFissa    = parseFloat(state[commodity + '_quota_fissa']);
+  const prezzoVendita = parseFloat(state[commodity + '_prezzo_vendita']);
+  const consumoAnnuo  = parseFloat(state[commodity + '_consumo_annuo']);
+  if (isNaN(quotaFissa) || isNaN(prezzoVendita) || isNaN(consumoAnnuo)) return null;
+
+  const mesi = getMesiCompetenza(commodity);
+  if (mesi.length === 0 || !datiMercatoRemoti) return null;
+  const indiceValore = getIndicePerMesi(indice, mesi);
+  if (indiceValore <= 0) return null;
+
+  const termine1 = (quotaFissa - QUOTA_FISSA_RIFERIMENTO) * 12;
+  const termine2 = (prezzoVendita - (indiceValore + spread)) * consumoAnnuo;
+  return termine1 + termine2;
+}
+
+function formattaRangeRisparmio(valorePuntuale) {
+  const a = valorePuntuale * 0.95, b = valorePuntuale * 1.05;
+  return { min: Math.round(Math.min(a, b)), max: Math.round(Math.max(a, b)) };
+}
+
+function costruisciBloccoRisparmio(etichetta, range, evidenziato) {
+  const positivo = range.max > 0 || range.min > 0;
+  const titolo = positivo ? 'Risparmio stimato' : 'Differenza di spesa stimata';
+  const icona = positivo ? '💶' : 'ℹ️';
+  const stile = evidenziato ? 'border-color:var(--blu);background:var(--blu-pale);' : '';
+  return `
+    <div class="agevolazione-block" style="${stile}margin-bottom:10px;">
+      <div class="agevolazione-title">${icona} ${etichetta} — ${titolo}</div>
+      Tra <strong>${range.min} € e ${range.max} € all'anno</strong>
+    </div>`;
+}
+
 function mostraRisparmioStimato() {
   const luceCF = document.getElementById('bollettaLuceSection').style.display !== 'none';
   const gasCF  = document.getElementById('bollettaGasSection').style.display  !== 'none';
 
-  let spesaVendita = 0;
-  const componenti = [];
+  const risparmioLuce = luceCF ? calcolaRisparmioCommodity('luce', 'PUN', SPREAD_LUCE) : null;
+  const risparmioGas  = gasCF  ? calcolaRisparmioCommodity('gas', 'PSbil', SPREAD_GAS) : null;
 
-  if (luceCF) {
-    const spesa = parseFloat(state.luce_prezzo_vendita) * parseFloat(state.luce_consumo_annuo);
-    if (!isNaN(spesa) && spesa > 0) { spesaVendita += spesa; componenti.push('Energia'); }
-  }
-  if (gasCF) {
-    const spesa = parseFloat(state.gas_prezzo_vendita) * parseFloat(state.gas_consumo_annuo);
-    if (!isNaN(spesa) && spesa > 0) { spesaVendita += spesa; componenti.push('Gas'); }
-  }
-
-  if (spesaVendita <= 0 || componenti.length === 0) {
-    // Dati insufficienti per una stima credibile: salta lo step e vai diretto a Calendly.
+  if (risparmioLuce === null && risparmioGas === null) {
+    // Dati di mercato non disponibili o insufficienti per un calcolo reale:
+    // niente numeri inventati, si salta lo step e si va diretto a Calendly.
     inviaEVaiCalendly();
     return;
   }
 
-  const min = Math.round(spesaVendita * 0.10);
-  const max = Math.round(spesaVendita * 0.20);
-  const label = componenti.join(' e ');
+  let blocchi = '';
+  if (risparmioLuce !== null) blocchi += costruisciBloccoRisparmio('Energia', formattaRangeRisparmio(risparmioLuce));
+  if (risparmioGas  !== null) blocchi += costruisciBloccoRisparmio('Gas', formattaRangeRisparmio(risparmioGas));
+  if (risparmioLuce !== null && risparmioGas !== null) {
+    blocchi += costruisciBloccoRisparmio('Totale (Energia + Gas)', formattaRangeRisparmio(risparmioLuce + risparmioGas), true);
+  }
 
   document.getElementById('risparmioStimatoSubtitle').textContent =
-    'In base ai consumi che hai indicato sulla componente ' + label + ', ecco una stima di quanto potresti risparmiare passando alle nostre tariffe.';
-  document.getElementById('risparmioStimatoBox').innerHTML = `
-    <div class="agevolazione-title">💶 Risparmio stimato</div>
-    Tra <strong>${min} € e ${max} € all'anno</strong> sulla componente ${label} —
-    una stima prudente, tra il 10% e il 20% della spesa per la vendita di ${label}.
-  `;
+    'Ecco una stima del risparmio annuo, calcolata sui dati di mercato aggiornati e sui consumi che hai indicato.';
+  document.getElementById('risparmioStimatoBox').innerHTML = blocchi;
 
   goTo('risparmio_stimato');
 }
