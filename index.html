@@ -1180,6 +1180,16 @@ const QUOTA_FISSA_RIFERIMENTO = 12;
 const SPREAD_LUCE = 0.009;
 const SPREAD_GAS = 0.09;
 
+function getAreraPerMesi(campo, mesi) {
+  if (!datiMercatoRemoti) return 0;
+  const valori = mesi
+    .map(m => (datiMercatoRemoti.serie_storica || []).find(r => r.mese === m))
+    .filter(Boolean)
+    .map(row => (row[campo] || 0) > 0 ? row[campo] : (datiMercatoRemoti[campo] || 0));
+  if (valori.length === 0) return 0;
+  return valori.reduce((a, b) => a + b, 0) / valori.length;
+}
+
 function calcolaRisparmioCommodity(commodity, indice, spread) {
   const quotaFissa    = parseFloat(state[commodity + '_quota_fissa']);
   const prezzoVendita = parseFloat(state[commodity + '_prezzo_vendita']);
@@ -1191,8 +1201,18 @@ function calcolaRisparmioCommodity(commodity, indice, spread) {
   const indiceValore = getIndicePerMesi(indice, mesi);
   if (indiceValore <= 0) return null;
 
+  // Per la Luce, oltre allo spread pubblico si aggiungono le componenti
+  // ARERA di dispacciamento: CDISP per i clienti Privati (maggior tutela),
+  // Dispacciamento + Capacity Market per le Aziende (mercato libero).
+  let extra = 0;
+  if (commodity === 'luce') {
+    extra = state.tipo_cliente === 'Azienda'
+      ? getAreraPerMesi('dispacciamento', mesi) + getAreraPerMesi('capacity_mkt', mesi)
+      : getAreraPerMesi('cdispd', mesi);
+  }
+
   const termine1 = (quotaFissa - QUOTA_FISSA_RIFERIMENTO) * 12;
-  const termine2 = (prezzoVendita - (indiceValore + spread)) * consumoAnnuo;
+  const termine2 = (prezzoVendita - (indiceValore + spread + extra)) * consumoAnnuo;
   return termine1 + termine2;
 }
 
