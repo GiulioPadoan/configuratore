@@ -179,17 +179,17 @@
     },
     {
       "mese": "Lug 2026",
-      "pun": 0.14085,
-      "psv": 0.531109685695959,
-      "psbil": 0.5253367543296985,
-      "ttf": 47.42,
+      "pun": 0.1472,
+      "psv": 0.5623262775283301,
+      "psbil": 0.5565533461620696,
+      "ttf": 49.84,
       "cdispd": 0.019902,
       "disp": 0,
       "cap": 0,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589,
-      "psv_mwh": 49.68,
-      "psbil_mwh": 49.14
+      "psv_mwh": 52.6,
+      "psbil_mwh": 52.06
     },
     {
       "mese": "Ago 2026",
@@ -198,7 +198,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 52.959,
+      "ttf": 57.395,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -210,7 +210,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 53.166,
+      "ttf": 57.49,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -222,7 +222,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 53.123,
+      "ttf": 57.345,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -234,7 +234,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 52.568,
+      "ttf": 56.481,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -246,7 +246,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 52.388,
+      "ttf": 56.167,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -258,7 +258,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 52.058,
+      "ttf": 55.68,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -270,7 +270,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 50.971,
+      "ttf": 54.329,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -282,7 +282,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 48.015,
+      "ttf": 50.935,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -294,7 +294,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 41.34,
+      "ttf": 43.074,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -306,7 +306,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 38.2,
+      "ttf": 39.278,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -318,7 +318,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 37.366,
+      "ttf": 38.303,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
@@ -330,7 +330,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 36.941,
+      "ttf": 37.863,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
