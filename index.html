@@ -1190,46 +1190,58 @@ function getAreraPerMesi(campo, mesi) {
   return valori.reduce((a, b) => a + b, 0) / valori.length;
 }
 
-function calcolaRisparmioCommodity(commodity, indice, spread) {
+// Proiezione reale mese per mese (stesso principio degli altri tool): per
+// ognuno dei prossimi N mesi da oggi si prende l'indice di quel preciso
+// mese (reale se assestato, stimato dal TTF altrimenti) e si somma la
+// differenza rispetto al prezzo del cliente — non un singolo valore
+// annualizzato esteso "a piatto".
+function calcolaRisparmioProiezione(commodity, indice, spread, nMesi) {
   const quotaFissa    = parseFloat(state[commodity + '_quota_fissa']);
   const prezzoVendita = parseFloat(state[commodity + '_prezzo_vendita']);
   const consumoAnnuo  = parseFloat(state[commodity + '_consumo_annuo']);
-  if (isNaN(quotaFissa) || isNaN(prezzoVendita) || isNaN(consumoAnnuo)) return null;
+  if (isNaN(quotaFissa) || isNaN(prezzoVendita) || isNaN(consumoAnnuo) || !datiMercatoRemoti) return null;
 
-  const mesi = getMesiCompetenza(commodity);
-  if (mesi.length === 0 || !datiMercatoRemoti) return null;
-  const indiceValore = getIndicePerMesi(indice, mesi);
-  if (indiceValore <= 0) return null;
+  const consumoMensile = consumoAnnuo / 12;
+  const oggi = new Date();
+  const posCorrente = oggi.getFullYear() * 12 + oggi.getMonth();
 
-  // Per la Luce, oltre allo spread pubblico si aggiungono le componenti
-  // ARERA di dispacciamento: CDISP per i clienti Privati (maggior tutela),
-  // Dispacciamento + Capacity Market per le Aziende (mercato libero).
-  let extra = 0;
-  if (commodity === 'luce') {
-    extra = state.tipo_cliente === 'Azienda'
-      ? getAreraPerMesi('dispacciamento', mesi) + getAreraPerMesi('capacity_mkt', mesi)
-      : getAreraPerMesi('cdispd', mesi);
+  let totaleEnergia = 0;
+  let mesiTrovati = 0;
+  for (let i = 0; i < nMesi; i++) {
+    const posTarget = posCorrente + i;
+    const row = (datiMercatoRemoti.serie_storica || []).find(r => mesePosizione(r.mese) === posTarget);
+    if (!row) continue;
+    const indiceValoreMese = getValoreIndicePerMese(indice, row.mese);
+    if (indiceValoreMese <= 0) continue;
+
+    // Per la Luce, oltre allo spread pubblico si aggiungono le componenti
+    // ARERA di dispacciamento: CDISP per i clienti Privati (maggior tutela),
+    // Dispacciamento + Capacity Market per le Aziende (mercato libero).
+    let extra = 0;
+    if (commodity === 'luce') {
+      extra = state.tipo_cliente === 'Azienda'
+        ? getAreraPerMesi('dispacciamento', [row.mese]) + getAreraPerMesi('capacity_mkt', [row.mese])
+        : getAreraPerMesi('cdispd', [row.mese]);
+    }
+    totaleEnergia += (prezzoVendita - (indiceValoreMese + spread + extra)) * consumoMensile;
+    mesiTrovati++;
   }
+  if (mesiTrovati === 0) return null;
 
-  const termine1 = (quotaFissa - QUOTA_FISSA_RIFERIMENTO) * 12;
-  const termine2 = (prezzoVendita - (indiceValore + spread + extra)) * consumoAnnuo;
-  return termine1 + termine2;
+  const termineQuotaFissa = (quotaFissa - QUOTA_FISSA_RIFERIMENTO) * mesiTrovati;
+  return termineQuotaFissa + totaleEnergia;
 }
 
-function formattaRangeRisparmio(valorePuntuale) {
-  const a = valorePuntuale * 0.95, b = valorePuntuale * 1.05;
-  return { min: Math.round(Math.min(a, b)), max: Math.round(Math.max(a, b)) };
-}
-
-function costruisciBloccoRisparmio(etichetta, range, evidenziato) {
-  const positivo = range.max > 0 || range.min > 0;
-  const titolo = positivo ? 'Risparmio stimato' : 'Differenza di spesa stimata';
-  const icona = positivo ? '💶' : 'ℹ️';
-  const stile = evidenziato ? 'border-color:var(--blu);background:var(--blu-pale);' : '';
+function costruisciBloccoRisparmio(etichetta, valoreLuce, valoreGas, nMesi) {
+  const haEntrambi = valoreLuce != null && valoreGas != null;
+  const valore = haEntrambi ? valoreLuce + valoreGas : (valoreLuce ?? valoreGas);
+  const segnoPositivo = valore > 0; // positivo = il cliente sta spendendo più di noi = risparmio
+  const colore = segnoPositivo ? '#166534' : '#dc2626';
+  const segno = segnoPositivo ? '-' : '+';
   return `
-    <div class="agevolazione-block" style="${stile}margin-bottom:10px;">
-      <div class="agevolazione-title">${icona} ${etichetta} — ${titolo}</div>
-      Tra <strong>${range.min} € e ${range.max} € all'anno</strong>
+    <div class="agevolazione-block" style="margin-bottom:10px;">
+      <div class="agevolazione-title">${etichetta} — prossimi ${nMesi} mesi di fornitura</div>
+      <strong style="color:${colore} !important;">${segno} ${Math.abs(valore).toFixed(2)} €</strong> rispetto all'attuale
     </div>`;
 }
 
@@ -1237,10 +1249,12 @@ function mostraRisparmioStimato() {
   const luceCF = document.getElementById('bollettaLuceSection').style.display !== 'none';
   const gasCF  = document.getElementById('bollettaGasSection').style.display  !== 'none';
 
-  const risparmioLuce = luceCF ? calcolaRisparmioCommodity('luce', 'PUN', SPREAD_LUCE) : null;
-  const risparmioGas  = gasCF  ? calcolaRisparmioCommodity('gas', 'PSbil', SPREAD_GAS) : null;
+  const luce12 = luceCF ? calcolaRisparmioProiezione('luce', 'PUN', SPREAD_LUCE, 12) : null;
+  const luce36 = luceCF ? calcolaRisparmioProiezione('luce', 'PUN', SPREAD_LUCE, 36) : null;
+  const gas12  = gasCF  ? calcolaRisparmioProiezione('gas', 'PSbil', SPREAD_GAS, 12) : null;
+  const gas36  = gasCF  ? calcolaRisparmioProiezione('gas', 'PSbil', SPREAD_GAS, 36) : null;
 
-  if (risparmioLuce === null && risparmioGas === null) {
+  if (luce12 === null && gas12 === null) {
     // Dati di mercato non disponibili o insufficienti per un calcolo reale:
     // niente numeri inventati, si salta lo step e si va diretto a Calendly.
     inviaEVaiCalendly();
@@ -1248,14 +1262,19 @@ function mostraRisparmioStimato() {
   }
 
   let blocchi = '';
-  if (risparmioLuce !== null) blocchi += costruisciBloccoRisparmio('Energia', formattaRangeRisparmio(risparmioLuce));
-  if (risparmioGas  !== null) blocchi += costruisciBloccoRisparmio('Gas', formattaRangeRisparmio(risparmioGas));
-  if (risparmioLuce !== null && risparmioGas !== null) {
-    blocchi += costruisciBloccoRisparmio('Totale (Energia + Gas)', formattaRangeRisparmio(risparmioLuce + risparmioGas), true);
+  if (luce12 !== null) blocchi += costruisciBloccoRisparmio('Energia', luce12, null, 12);
+  if (luce36 !== null) blocchi += costruisciBloccoRisparmio('Energia', luce36, null, 36);
+  if (gas12  !== null) blocchi += costruisciBloccoRisparmio('Gas', null, gas12, 12);
+  if (gas36  !== null) blocchi += costruisciBloccoRisparmio('Gas', null, gas36, 36);
+  if (luce12 !== null && gas12 !== null) {
+    blocchi += costruisciBloccoRisparmio('Totale (Energia + Gas)', luce12, gas12, 12);
+  }
+  if (luce36 !== null && gas36 !== null) {
+    blocchi += costruisciBloccoRisparmio('Totale (Energia + Gas)', luce36, gas36, 36);
   }
 
   document.getElementById('risparmioStimatoSubtitle').textContent =
-    'Ecco una stima del risparmio annuo, calcolata sui dati di mercato aggiornati e sui consumi che hai indicato.';
+    'Ecco la differenza rispetto a quanto paghi oggi, calcolata sui dati di mercato aggiornati e sui consumi che hai indicato.';
   document.getElementById('risparmioStimatoBox').innerHTML = blocchi;
 
   goTo('risparmio_stimato');
