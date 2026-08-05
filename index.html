@@ -557,9 +557,7 @@
   <div class="display">Scegli il momento migliore per Te</div>
   <p class="subtitle" style="margin-bottom:16px;">Prenota direttamente il tuo appuntamento. Riceverai una conferma via email.</p>
   <div class="calendly-wrap">
-    <div class="calendly-inline-widget"
-      data-url="https://calendly.com/giulio-iltuoconsulentedifiducia-jtrt/30min"
-      style="min-width:280px;height:700px;"></div>
+    <div id="calendly_container" style="min-width:280px;height:700px;"></div>
     <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
   </div>
 </div>
@@ -728,7 +726,40 @@ function aggiornaMeseCompetenzaInfo(commodity) {
 }
 
 const MAKE_WEBHOOK = 'https://hook.eu1.make.com/gl4m4a1d6sgy0d1wyets4dun68af16zs';
-const CALENDLY_URL = 'https://calendly.com/giulio-iltuoconsulentedifiducia-jtrt/30min';
+
+// ── SMISTAMENTO CALENDLY ─────────────────────────────────────
+// Residenziale va sempre da Arianna (appuntamento in Store). Azienda invece
+// si smista in base al consumo combinato (Luce in kWh + Gas in Smc, 1 Smc
+// gas = 10 kWh equivalenti): sotto soglia ad Arianna, sopra a Giulio — sopra
+// i 400.000 kWh resta comunque a Giulio per ora (soglia tenuta pronta per
+// quando si aggiungerà una nuova commerciale dedicata a quella fascia).
+const CALENDLY_URL_GIULIO  = 'https://calendly.com/giulio-iltuoconsulentedifiducia-jtrt/30min';
+const CALENDLY_URL_ARIANNA = 'https://calendly.com/clienti-iltuoconsulentedifiducia/consulenza-in-store';
+const SOGLIA_AZIENDA_GIULIO_KWH = 70000;
+const SOGLIA_AZIENDA_FUTURA_COMMERCIALE_KWH = 400000; // non ancora usata, vedi nota sopra
+const KWH_PER_SMC_GAS = 10;
+
+function getCalendlyUrlAssegnato() {
+  if (state.tipo_cliente !== 'Azienda') return CALENDLY_URL_ARIANNA;
+  const consumoLuce = parseFloat(state.luce_consumo_annuo) || 0;
+  const consumoGas  = parseFloat(state.gas_consumo_annuo) || 0;
+  const consumoCombinato = consumoLuce + (consumoGas * KWH_PER_SMC_GAS);
+  return consumoCombinato > SOGLIA_AZIENDA_GIULIO_KWH ? CALENDLY_URL_GIULIO : CALENDLY_URL_ARIANNA;
+}
+
+function apriCalendly() {
+  const url = getCalendlyUrlAssegnato();
+  const container = document.getElementById('calendly_container');
+  container.innerHTML = '';
+  const inizializza = () => {
+    if (window.Calendly && window.Calendly.initInlineWidget) {
+      window.Calendly.initInlineWidget({ url, parentElement: container });
+    } else {
+      setTimeout(inizializza, 200); // il widget.js (async) potrebbe non essere ancora pronto
+    }
+  };
+  inizializza();
+}
 
 // SVG arrows
 const ARR_L = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
@@ -1305,7 +1336,8 @@ function inviaEVaiCalendly() {
     servizio_q2: state.servizio_q2 === 'si' ? 'Sì' : 'No',
     servizio_q3: state.servizio_q3 === 'si' ? 'Sì' : 'No',
     servizio_q4: state.servizio_q4 === 'si' ? 'Sì' : 'No',
-    servizio_q5: state.servizio_q5 === 'si' ? 'Sì' : 'No'
+    servizio_q5: state.servizio_q5 === 'si' ? 'Sì' : 'No',
+    calendly_assegnato: getCalendlyUrlAssegnato() === CALENDLY_URL_GIULIO ? 'Giulio' : 'Arianna'
   };
 
   fetch(MAKE_WEBHOOK, {
@@ -1314,6 +1346,7 @@ function inviaEVaiCalendly() {
     body: JSON.stringify(payload)
   }).then(() => console.log('Make: invio OK')).catch(e => console.warn('Make: errore', e));
 
+  apriCalendly();
   goTo('calendly');
 }
 </script>
