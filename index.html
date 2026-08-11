@@ -852,16 +852,26 @@ function validateCommodity() {
 }
 
 // ── STEP 3 — OPERAZIONE ──────────────────────────────────
+// Legge la scelta direttamente dal radio selezionato in quel momento,
+// invece di fidarsi solo di state.op_luce salvato al click precedente:
+// così anche se per qualche motivo (evento onchange non arrivato, stato
+// non sincronizzato) state fosse rimasto vuoto, la validazione vede
+// comunque esattamente quello che l'utente ha davanti — niente più
+// "sembra selezionato ma bisogna riselezionare per procedere".
 function validateOpLuce() {
-  if (!state.op_luce) { document.getElementById('err_op_luce').style.display = 'block'; return; }
+  const checked = document.querySelector('input[name="op_luce"]:checked');
+  if (!checked) { document.getElementById('err_op_luce').style.display = 'block'; return; }
   document.getElementById('err_op_luce').style.display = 'none';
+  state.op_luce = checked.value;
   if (state.commodity.includes('Gas')) goTo('operazione_gas');
   else goToUtilizzoLuce();
 }
 
 function validateOpGas() {
-  if (!state.op_gas) { document.getElementById('err_op_gas').style.display = 'block'; return; }
+  const checked = document.querySelector('input[name="op_gas"]:checked');
+  if (!checked) { document.getElementById('err_op_gas').style.display = 'block'; return; }
   document.getElementById('err_op_gas').style.display = 'none';
+  state.op_gas = checked.value;
   if (state.commodity.includes('Luce')) goToUtilizzoLuce();
   else goToUtilizzoGas();
 }
