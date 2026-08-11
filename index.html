@@ -264,6 +264,11 @@
     <input type="email" id="email_input" placeholder="es. mario.rossi@email.it"/>
     <span class="field-error" id="err_email"></span>
   </div>
+  <div class="privacy-row">
+    <input type="checkbox" id="chk_privacy"/>
+    <label for="chk_privacy">Ho letto e accetto l'<a href="https://www.iubenda.com/privacy-policy/85954225" target="_blank" rel="noopener">Informativa sulla Privacy</a> e acconsento al trattamento dei miei dati per essere ricontattato/a. *</label>
+  </div>
+  <div id="err_privacy">Devi accettare l'informativa sulla privacy per continuare.</div>
   <button class="btn-primary" onclick="validateEmail()">Inizia ›</button>
 </div>
 
@@ -566,6 +571,8 @@
 // ── STATE ─────────────────────────────────────────────────
 const state = {
   email: '',
+  privacy_accettata: false,
+  privacy_accettata_il: '',
   tipo_cliente: '',
   commodity: [],         // ['Luce'] / ['Gas'] / ['Luce','Gas']
   op_luce: '',
@@ -806,14 +813,33 @@ function validateEmail() {
   const el = document.getElementById('email_input');
   const errEl = document.getElementById('err_email');
   const val = el.value.trim();
+  const chkPrivacy = document.getElementById('chk_privacy');
+  const errPrivacyEl = document.getElementById('err_privacy');
+  let valid = true;
+
   if (!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
     el.classList.add('error');
     errEl.textContent = 'Inserisci un indirizzo email valido.';
-    return;
+    valid = false;
+  } else {
+    el.classList.remove('error');
+    errEl.textContent = '';
   }
-  el.classList.remove('error');
-  errEl.textContent = '';
+
+  if (!chkPrivacy.checked) {
+    errPrivacyEl.style.display = 'block';
+    valid = false;
+  } else {
+    errPrivacyEl.style.display = 'none';
+  }
+
+  if (!valid) return;
+
   state.email = val;
+  // Traccia consenso con timestamp: serve come prova verificabile del
+  // consenso raccolto (checkbox non pre-spuntata), non solo il flag.
+  state.privacy_accettata = true;
+  state.privacy_accettata_il = new Date().toISOString();
   goTo('tipo_cliente');
 }
 
@@ -1210,6 +1236,11 @@ function validateBolletta() {
 const QUOTA_FISSA_RIFERIMENTO = 12;
 const SPREAD_LUCE = 0.009;
 const SPREAD_GAS = 0.09;
+// Perdite di rete: il prezzo che il cliente paga in bolletta le include già,
+// mentre il PUN/indice di mercato è "a monte" e non le contiene — senza
+// questo fattore il confronto sovrastima il risparmio sulla Luce. Non si
+// applica al Gas (non previsto). Solo sulla Luce.
+const FATTORE_PERDITE_RETE_LUCE = 1.1;
 
 function getAreraPerMesi(campo, mesi) {
   if (!datiMercatoRemoti) return 0;
@@ -1248,13 +1279,17 @@ function calcolaRisparmioProiezione(commodity, indice, spread, nMesi) {
     // Per la Luce, oltre allo spread pubblico si aggiungono le componenti
     // ARERA di dispacciamento: CDISP per i clienti Privati (maggior tutela),
     // Dispacciamento + Capacity Market per le Aziende (mercato libero).
+    // Il tutto va poi maggiorato del fattore perdite di rete (solo Luce),
+    // per essere confrontabile col prezzo finale in bolletta del cliente.
     let extra = 0;
+    let fattorePerdite = 1;
     if (commodity === 'luce') {
       extra = state.tipo_cliente === 'Azienda'
         ? getAreraPerMesi('dispacciamento', [row.mese]) + getAreraPerMesi('capacity_mkt', [row.mese])
         : getAreraPerMesi('cdispd', [row.mese]);
+      fattorePerdite = FATTORE_PERDITE_RETE_LUCE;
     }
-    totaleEnergia += (prezzoVendita - (indiceValoreMese + spread + extra)) * consumoMensile;
+    totaleEnergia += (prezzoVendita - (indiceValoreMese + spread + extra) * fattorePerdite) * consumoMensile;
     mesiTrovati++;
   }
   if (mesiTrovati === 0) return null;
@@ -1315,6 +1350,8 @@ function inviaEVaiCalendly() {
   // Invia payload a Make in background
   const payload = {
     email: state.email,
+    privacy_accettata: state.privacy_accettata ? 'Sì' : 'No',
+    privacy_accettata_il: state.privacy_accettata_il || '—',
     tipo_cliente: state.tipo_cliente,
     commodity: state.commodity.join(' + '),
     op_luce: state.op_luce || '—',
