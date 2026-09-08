@@ -1,10 +1,10 @@
 {
   "_nota": "Dati di mercato pubblici (indici energia/gas). Aggiornati manualmente da Giulio ogni volta che arrivano nuovi dati. PUN/PSV/PSbil sono reali solo per i mesi già passati/assestati (0 = non ancora noto, i tool lo stimano dal TTF); il TTF è invece già disponibile in anticipo dai future. Nessun dato di margine o offerta qui.",
   "aggiornato_il": "2026-09-08",
-  "pun_corrente": 0,
-  "psv_corrente": 0,
-  "psbil_corrente": 0,
-  "ttf_corrente": 0,
+  "pun_corrente": 0.20829,
+  "psv_corrente": 0.8069275176395124,
+  "psbil_corrente": 0.812807355142185,
+  "ttf_corrente": 73.275,
   "pun_prev": 0,
   "psv_prev": 0,
   "cdispd": 0,
@@ -210,7 +210,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 70,
+      "ttf": 73.275,
       "cdispd": 0.019902,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.005589
