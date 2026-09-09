@@ -1,7 +1,7 @@
 {
   "_nota": "Dati di mercato pubblici (indici energia/gas). Aggiornati manualmente da Giulio ogni volta che arrivano nuovi dati. PUN/PSV/PSbil sono reali solo per i mesi già passati/assestati (0 = non ancora noto, i tool lo stimano dal TTF); il TTF è invece già disponibile in anticipo dai future. Nessun dato di margine o offerta qui.",
-  "aggiornato_il": "2026-09-08",
-  "pun_corrente": 0.20829,
+  "aggiornato_il": "2026-09-09",
+  "pun_corrente": 0.21197,
   "psv_corrente": 0.8069275176395124,
   "psbil_corrente": 0.812807355142185,
   "ttf_corrente": 73.275,
