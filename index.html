@@ -575,7 +575,12 @@ const state = {
 // ═══════════════════════════════════════════
 const MARKET_DATA_URL = 'https://giuliopadoan.github.io/configuratore/market-data.json';
 let datiMercatoRemoti = null;
-const datiMercatoRemotiPromise = fetch(MARKET_DATA_URL)
+// Parametro anti-cache (aggiunto 09/09/2026): il file ha cache-control
+// max-age=600 lato GitHub Pages — senza un URL diverso a ogni carico, il
+// browser di chi ha già visitato il tool nei 10 minuti precedenti un
+// aggiornamento dati continua a leggere la copia vecchia dalla propria
+// cache locale, anche dopo che il file su GitHub è già corretto.
+const datiMercatoRemotiPromise = fetch(MARKET_DATA_URL + '?t=' + Date.now())
   .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
   .then(d => { datiMercatoRemoti = d; })
   .catch(e => console.warn('Dati di mercato non disponibili:', e.message));
