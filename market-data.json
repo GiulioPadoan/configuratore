@@ -1,6 +1,6 @@
 {
   "_nota": "Dati di mercato pubblici (indici energia/gas). Aggiornati manualmente da Giulio ogni volta che arrivano nuovi dati. PUN/PSV/PSbil sono reali solo per i mesi già passati/assestati (0 = non ancora noto, i tool lo stimano dal TTF); il TTF è invece già disponibile in anticipo dai future. Nessun dato di margine o offerta qui.",
-  "aggiornato_il": "2026-09-09",
+  "aggiornato_il": "2026-09-15",
   "pun_corrente": 0.21197,
   "psv_corrente": 0.8069275176395124,
   "psbil_corrente": 0.812807355142185,
@@ -183,11 +183,11 @@
       "psv": 0.6051956382296343,
       "psbil": 0.6051956382296343,
       "ttf": 52.39,
-      "cdispd": 0.019902,
+      "cdispd": 0.38464,
       "disp": 0,
       "cap": 0,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589,
+      "capacity_mkt": 0.013492,
       "psv_mwh": 56.61,
       "psbil_mwh": 56.61
     },
@@ -199,9 +199,9 @@
       "psv_mwh": 64.26,
       "psbil_mwh": 64.55,
       "ttf": 61.9,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Set 2026",
@@ -211,9 +211,9 @@
       "psv_mwh": 75.48,
       "psbil_mwh": 76.03,
       "ttf": 73.275,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Ott 2026",
@@ -223,9 +223,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 73.306,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Nov 2026",
@@ -235,9 +235,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 73.135,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Dic 2026",
@@ -247,9 +247,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 72.95,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Gen 2027",
@@ -259,9 +259,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 72.731,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Feb 2027",
@@ -271,9 +271,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 71.959,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Mar 2027",
@@ -283,9 +283,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 68.391,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Apr 2027",
@@ -295,9 +295,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 55.614,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Mag 2027",
@@ -307,9 +307,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 50.071,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Giu 2027",
@@ -319,9 +319,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 48.617,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Lug 2027",
@@ -331,9 +331,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 48.167,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Ago 2027",
@@ -343,9 +343,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 47.852,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Set 2027",
@@ -355,9 +355,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 47.706,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Ott 2027",
@@ -367,9 +367,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 47.426,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Nov 2027",
@@ -379,9 +379,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 47.247,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Dic 2027",
@@ -391,9 +391,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 47.301,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Gen 2028",
@@ -403,9 +403,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 46.782,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Feb 2028",
@@ -415,9 +415,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 45.757,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Mar 2028",
@@ -427,9 +427,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 42.137,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Apr 2028",
@@ -439,9 +439,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 34.833,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Mag 2028",
@@ -451,9 +451,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 31.688,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Giu 2028",
@@ -463,9 +463,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 31.063,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Lug 2028",
@@ -475,9 +475,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 31.181,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Ago 2028",
@@ -487,9 +487,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 31.041,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Set 2028",
@@ -499,9 +499,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 31.151,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Ott 2028",
@@ -511,9 +511,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 31.489,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Nov 2028",
@@ -523,9 +523,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 31.954,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Dic 2028",
@@ -535,9 +535,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 32.344,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Gen 2029",
@@ -547,9 +547,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 32.78,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Feb 2029",
@@ -559,9 +559,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 32.77,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Mar 2029",
@@ -571,9 +571,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 31.927,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Apr 2029",
@@ -583,9 +583,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 27.506,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Mag 2029",
@@ -595,9 +595,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 26.536,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Giu 2029",
@@ -607,9 +607,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 26.036,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Lug 2029",
@@ -619,9 +619,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 25.426,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Ago 2029",
@@ -631,9 +631,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 25.441,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Set 2029",
@@ -643,9 +643,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 25.791,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Ott 2029",
@@ -655,9 +655,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 25.931,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Nov 2029",
@@ -667,9 +667,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 26.361,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     },
     {
       "mese": "Dic 2029",
@@ -679,9 +679,9 @@
       "psv_mwh": 0,
       "psbil_mwh": 0,
       "ttf": 26.756,
-      "cdispd": 0.019902,
+      "cdispd": 0.18468,
       "dispacciamento": 0.0105,
-      "capacity_mkt": 0.005589
+      "capacity_mkt": 0.013492
     }
   ],
   "arera_manuale": {
