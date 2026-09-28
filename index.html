@@ -519,11 +519,11 @@
 
 <!-- ═══ STEP 8b — RISPARMIO STIMATO (solo Cambio Fornitore) ═══ -->
 <div class="card" id="step_risparmio_stimato" style="display:none">
-  <div class="eyebrow">La tua stima</div>
-  <div class="display">Il tuo risparmio stimato</div>
+  <div class="eyebrow" id="risparmioEyebrow">La tua stima</div>
+  <div class="display" id="risparmioTitolo">Il tuo risparmio stimato</div>
   <p class="subtitle" id="risparmioStimatoSubtitle" style="margin-bottom:16px;"></p>
   <div id="risparmioStimatoBox"></div>
-  <div class="info-block" style="margin-top:8px;">
+  <div class="info-block" id="risparmioNota" style="margin-top:8px;">
     Stima calcolata sui dati di mercato aggiornati e sui consumi che hai indicato — al variare dei consumi può variare anche la stima di risparmio. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.
   </div>
   <div class="btn-row" style="margin-top:24px;">
@@ -1217,7 +1217,24 @@ function validateBolletta() {
     checkMeseCompetenza('gas');
   }
 
-  if (valid) mostraRisparmioStimato();
+  if (valid) {
+    const luceKwh = luceCF ? (parseFloat(state.luce_consumo_annuo) || 0) : 0;
+    const gasSmc  = gasCF  ? (parseFloat(state.gas_consumo_annuo)  || 0) : 0;
+    consumoCombinatoKwh = luceKwh + gasSmc;
+    offertaPersonalizzata = consumoCombinatoKwh > SOGLIA_CONSUMO_COMBINATO_KWH;
+    if (offertaPersonalizzata) mostraOffertaPersonalizzata();
+    else mostraRisparmioStimato();
+  }
+}
+
+function mostraOffertaPersonalizzata() {
+  document.getElementById('risparmioEyebrow').textContent = 'Offerta dedicata';
+  document.getElementById('risparmioTitolo').textContent = 'Per i tuoi consumi serve un\'offerta su misura';
+  document.getElementById('risparmioStimatoSubtitle').textContent =
+    'I consumi che hai indicato superano il volume gestibile dal configuratore online: per forniture di questa dimensione lavoriamo con offerte personalizzate, costruite sul tuo profilo di consumo.';
+  document.getElementById('risparmioStimatoBox').innerHTML = '';
+  document.getElementById('risparmioNota').style.display = 'none';
+  goTo('risparmio_stimato');
 }
 
 // ── STIMA RISPARMIO (range indicativo 10-20%, non un calcolo puntuale) ──
@@ -1232,6 +1249,16 @@ const SPREAD_GAS = 0.09;
 // questo fattore il confronto sovrastima il risparmio sulla Luce. Non si
 // applica al Gas (non previsto). Solo sulla Luce.
 const FATTORE_PERDITE_RETE_LUCE = 1.1;
+
+// Soglia consumo combinato (aggiunta 28/09/2026, ver2.4): il configuratore
+// lavora con le offerte standard fino a 300.000 kWh/anno di consumo
+// combinato Luce + Gas (1 Smc = 1 kWh, sommati direttamente). Sopra questa
+// soglia si va di offerte personalizzate: niente stima di risparmio (lo
+// spread pubblico sarebbe troppo alto per quel target e mostrerebbe un
+// risultato sfavorevole non reale), ma un messaggio e poi Calendly.
+const SOGLIA_CONSUMO_COMBINATO_KWH = 300000;
+let offertaPersonalizzata = false;
+let consumoCombinatoKwh = 0;
 
 function getAreraPerMesi(campo, mesi) {
   if (!datiMercatoRemoti) return 0;
@@ -1333,6 +1360,9 @@ function mostraRisparmioStimato() {
   document.getElementById('risparmioStimatoSubtitle').textContent =
     'Ecco la differenza rispetto a quanto paghi oggi, calcolata sui dati di mercato aggiornati e sui consumi che hai indicato.';
   document.getElementById('risparmioStimatoBox').innerHTML = blocchi;
+  document.getElementById('risparmioEyebrow').textContent = 'La tua stima';
+  document.getElementById('risparmioTitolo').textContent = 'Il tuo risparmio stimato';
+  document.getElementById('risparmioNota').style.display = '';
 
   goTo('risparmio_stimato');
 }
@@ -1365,6 +1395,8 @@ function inviaEVaiCalendly() {
     servizio_q3: state.servizio_q3 === 'si' ? 'Sì' : 'No',
     servizio_q4: state.servizio_q4 === 'si' ? 'Sì' : 'No',
     servizio_q5: state.servizio_q5 === 'si' ? 'Sì' : 'No',
+    offerta_personalizzata: offertaPersonalizzata ? 'Sì' : 'No',
+    consumo_combinato_kwh: consumoCombinatoKwh || '—',
     calendly_assegnato: getCalendlyUrlAssegnato() === CALENDLY_URL_GIULIO ? 'Giulio' : 'Arianna'
   };
 
