@@ -1220,7 +1220,7 @@ function validateBolletta() {
   if (valid) {
     const luceKwh = luceCF ? (parseFloat(state.luce_consumo_annuo) || 0) : 0;
     const gasSmc  = gasCF  ? (parseFloat(state.gas_consumo_annuo)  || 0) : 0;
-    consumoCombinatoKwh = luceKwh + gasSmc;
+    consumoCombinatoKwh = luceKwh + gasSmc * FATTORE_SMC_IN_KWH;
     offertaPersonalizzata = consumoCombinatoKwh > SOGLIA_CONSUMO_COMBINATO_KWH;
     if (offertaPersonalizzata) mostraOffertaPersonalizzata();
     else mostraRisparmioStimato();
@@ -1252,11 +1252,13 @@ const FATTORE_PERDITE_RETE_LUCE = 1.1;
 
 // Soglia consumo combinato (aggiunta 28/09/2026, ver2.4): il configuratore
 // lavora con le offerte standard fino a 300.000 kWh/anno di consumo
-// combinato Luce + Gas (1 Smc = 1 kWh, sommati direttamente). Sopra questa
+// combinato Luce + Gas (gas convertito in kWh: 1 Smc = 10 kWh, vedi
+// FATTORE_SMC_IN_KWH — corretto in ver2.5, in ver2.4 era per errore x1). Sopra questa
 // soglia si va di offerte personalizzate: niente stima di risparmio (lo
 // spread pubblico sarebbe troppo alto per quel target e mostrerebbe un
 // risultato sfavorevole non reale), ma un messaggio e poi Calendly.
 const SOGLIA_CONSUMO_COMBINATO_KWH = 300000;
+const FATTORE_SMC_IN_KWH = 10;
 let offertaPersonalizzata = false;
 let consumoCombinatoKwh = 0;
 
