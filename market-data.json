@@ -1,6 +1,6 @@
 {
   "_nota": "Dati di mercato pubblici (indici energia/gas). Aggiornati manualmente da Giulio ogni volta che arrivano nuovi dati. PUN/PSV/PSbil sono reali solo per i mesi già passati/assestati (0 = non ancora noto, i tool lo stimano dal TTF); il TTF è invece già disponibile in anticipo dai future. Nessun dato di margine o offerta qui. Dal 01/10/2026: sui mesi Apr2027-Dic2030 il campo ttf include un premio di rischio volatilità (vedi ttf_reale = valore originale del future, premio_rischio_pct = percentuale applicata) — ttf = ttf_reale * (1 + premio_rischio_pct/100). Tutto il resto (PUN/PSV/PSbil stimati, proiezioni, report) deriva da ttf e quindi eredita automaticamente il premio.",
-  "aggiornato_il": "2026-10-01",
+  "aggiornato_il": "2026-10-02",
   "pun_corrente": 0.21122,
   "psv_corrente": 0.8535385931152448,
   "psbil_corrente": 0.8572803078896728,
@@ -205,12 +205,12 @@
     },
     {
       "mese": "Set 2026",
-      "pun": 0.21122,
-      "psv": 0.8535385931152448,
-      "psbil": 0.8572803078896728,
-      "psv_mwh": 79.84,
-      "psbil_mwh": 80.19,
-      "ttf": 77.051,
+      "pun": 0.20754,
+      "psv": 0.8403891383365405,
+      "psbil": 0.8441308531109685,
+      "psv_mwh": 78.61,
+      "psbil_mwh": 78.96,
+      "ttf": 75.704,
       "cdispd": 0.018468,
       "dispacciamento": 0.0105,
       "capacity_mkt": 0.013492
