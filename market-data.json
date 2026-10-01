@@ -1,6 +1,6 @@
 {
-  "_nota": "Dati di mercato pubblici (indici energia/gas). Aggiornati manualmente da Giulio ogni volta che arrivano nuovi dati. PUN/PSV/PSbil sono reali solo per i mesi già passati/assestati (0 = non ancora noto, i tool lo stimano dal TTF); il TTF è invece già disponibile in anticipo dai future. Nessun dato di margine o offerta qui.",
-  "aggiornato_il": "2026-09-21",
+  "_nota": "Dati di mercato pubblici (indici energia/gas). Aggiornati manualmente da Giulio ogni volta che arrivano nuovi dati. PUN/PSV/PSbil sono reali solo per i mesi già passati/assestati (0 = non ancora noto, i tool lo stimano dal TTF); il TTF è invece già disponibile in anticipo dai future. Nessun dato di margine o offerta qui. Dal 01/10/2026: sui mesi Apr2027-Dic2030 il campo ttf include un premio di rischio volatilità (vedi ttf_reale = valore originale del future, premio_rischio_pct = percentuale applicata) — ttf = ttf_reale * (1 + premio_rischio_pct/100). Tutto il resto (PUN/PSV/PSbil stimati, proiezioni, report) deriva da ttf e quindi eredita automaticamente il premio.",
+  "aggiornato_il": "2026-10-01",
   "pun_corrente": 0.21122,
   "psv_corrente": 0.8535385931152448,
   "psbil_corrente": 0.8572803078896728,
@@ -294,10 +294,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 57.995,
+      "ttf": 66.694,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 57.995,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Mag 2027",
@@ -306,10 +308,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 53.685,
+      "ttf": 61.738,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 53.685,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Giu 2027",
@@ -318,10 +322,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 51.8,
+      "ttf": 59.57,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 51.8,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Lug 2027",
@@ -330,10 +336,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 51.255,
+      "ttf": 58.943,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 51.255,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Ago 2027",
@@ -342,10 +350,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 52.174,
+      "ttf": 60.0,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 52.174,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Set 2027",
@@ -354,10 +364,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 50.4,
+      "ttf": 57.96,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 50.4,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Ott 2027",
@@ -366,10 +378,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 50.055,
+      "ttf": 57.563,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 50.055,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Nov 2027",
@@ -378,10 +392,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 49.98,
+      "ttf": 57.477,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 49.98,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Dic 2027",
@@ -390,10 +406,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 49.88,
+      "ttf": 57.362,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 49.88,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Gen 2028",
@@ -402,10 +420,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 49.875,
+      "ttf": 56.109,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 49.875,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Feb 2028",
@@ -414,10 +434,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 48.18,
+      "ttf": 54.203,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 48.18,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Mar 2028",
@@ -426,10 +448,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 46.111,
+      "ttf": 51.875,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 46.111,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Apr 2028",
@@ -438,10 +462,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 36.886,
+      "ttf": 41.497,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 36.886,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Mag 2028",
@@ -450,10 +476,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 33.441,
+      "ttf": 37.621,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 33.441,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Giu 2028",
@@ -462,10 +490,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 32.731,
+      "ttf": 36.822,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 32.731,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Lug 2028",
@@ -474,10 +504,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 32.886,
+      "ttf": 36.997,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 32.886,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Ago 2028",
@@ -486,10 +518,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 32.651,
+      "ttf": 36.732,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 32.651,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Set 2028",
@@ -498,10 +532,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 32.726,
+      "ttf": 36.817,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 32.726,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Ott 2028",
@@ -510,10 +546,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 33.021,
+      "ttf": 37.149,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 33.021,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Nov 2028",
@@ -522,10 +560,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 33.511,
+      "ttf": 37.7,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 33.511,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Dic 2028",
@@ -534,10 +574,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 33.901,
+      "ttf": 38.139,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 33.901,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Gen 2029",
@@ -546,10 +588,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 34.316,
+      "ttf": 38.091,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 34.316,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Feb 2029",
@@ -558,10 +602,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 34.291,
+      "ttf": 38.063,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 34.291,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Mar 2029",
@@ -570,10 +616,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 33.441,
+      "ttf": 37.12,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 33.441,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Apr 2029",
@@ -582,10 +630,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 29.162,
+      "ttf": 32.37,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 29.162,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Mag 2029",
@@ -594,10 +644,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 28.197,
+      "ttf": 31.299,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 28.197,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Giu 2029",
@@ -606,10 +658,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 27.692,
+      "ttf": 30.738,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 27.692,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Lug 2029",
@@ -618,10 +672,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 26.982,
+      "ttf": 29.95,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 26.982,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Ago 2029",
@@ -630,10 +686,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 26.997,
+      "ttf": 29.967,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 26.997,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Set 2029",
@@ -642,10 +700,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 27.317,
+      "ttf": 30.322,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 27.317,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Ott 2029",
@@ -654,10 +714,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 27.498,
+      "ttf": 30.523,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 27.498,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Nov 2029",
@@ -666,10 +728,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 27.929,
+      "ttf": 31.001,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 27.929,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Dic 2029",
@@ -678,10 +742,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 28.319,
+      "ttf": 31.434,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 28.319,
+      "premio_rischio_pct": 11.0
     },
     {
       "mese": "Gen 2030",
@@ -690,10 +756,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 28.319,
+      "ttf": 31.151,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 28.319,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Feb 2030",
@@ -702,10 +770,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 28.284,
+      "ttf": 31.112,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 28.284,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Mar 2030",
@@ -714,10 +784,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 28.229,
+      "ttf": 31.052,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 28.229,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Apr 2030",
@@ -726,10 +798,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 25.786,
+      "ttf": 28.365,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 25.786,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Mag 2030",
@@ -738,10 +812,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 25.466,
+      "ttf": 28.013,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 25.466,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Giu 2030",
@@ -750,10 +826,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 25.151,
+      "ttf": 27.666,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 25.151,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Lug 2030",
@@ -762,10 +840,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 23.681,
+      "ttf": 26.049,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 23.681,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Ago 2030",
@@ -774,10 +854,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 24.006,
+      "ttf": 26.407,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 24.006,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Set 2030",
@@ -786,10 +868,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 24.666,
+      "ttf": 27.133,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 24.666,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Ott 2030",
@@ -798,10 +882,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 25.186,
+      "ttf": 27.705,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 25.186,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Nov 2030",
@@ -810,10 +896,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 25.971,
+      "ttf": 28.568,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 25.971,
+      "premio_rischio_pct": 10.0
     },
     {
       "mese": "Dic 2030",
@@ -822,10 +910,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 26.437,
+      "ttf": 29.081,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 26.437,
+      "premio_rischio_pct": 10.0
     }
   ],
   "arera_manuale": {
