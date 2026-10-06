@@ -446,6 +446,15 @@
       <span class="field-error" id="err_luce_prezzo_vendita"></span>
     </div>
     <div class="field">
+      <label>Il tuo prezzo attuale è</label>
+      <div style="display:flex;gap:8px;">
+        <div class="choice-card" id="luce_tp_fisso" onclick="setTipoPrezzoAttuale('luce','Fisso')" style="flex:1;padding:10px;text-align:center;cursor:pointer;">Fisso</div>
+        <div class="choice-card" id="luce_tp_variabile" onclick="setTipoPrezzoAttuale('luce','Variabile')" style="flex:1;padding:10px;text-align:center;cursor:pointer;">Variabile (indicizzato)</div>
+      </div>
+      <span class="field-error" id="err_luce_tipo_prezzo"></span>
+      <div style="font-size:.72rem;color:var(--grey-400);margin-top:4px;">Lo trovi in bolletta, nel nome dell'offerta (es. "…Fix" oppure "…Index/Variabile").</div>
+    </div>
+    <div class="field">
       <label>Potenza del contatore (kW)</label>
       <input type="number" id="luce_potenza" placeholder="es. 4.5" step="0.5"/>
       <span class="field-error" id="err_luce_potenza"></span>
@@ -486,6 +495,15 @@
       <label>Prezzo vendita gas (€/Smc)</label>
       <input type="number" id="gas_prezzo_vendita" placeholder="es. 0.85" step="0.001"/>
       <span class="field-error" id="err_gas_prezzo_vendita"></span>
+    </div>
+    <div class="field">
+      <label>Il tuo prezzo attuale è</label>
+      <div style="display:flex;gap:8px;">
+        <div class="choice-card" id="gas_tp_fisso" onclick="setTipoPrezzoAttuale('gas','Fisso')" style="flex:1;padding:10px;text-align:center;cursor:pointer;">Fisso</div>
+        <div class="choice-card" id="gas_tp_variabile" onclick="setTipoPrezzoAttuale('gas','Variabile')" style="flex:1;padding:10px;text-align:center;cursor:pointer;">Variabile (indicizzato)</div>
+      </div>
+      <span class="field-error" id="err_gas_tipo_prezzo"></span>
+      <div style="font-size:.72rem;color:var(--grey-400);margin-top:4px;">Lo trovi in bolletta, nel nome dell'offerta (es. "…Fix" oppure "…Index/Variabile").</div>
     </div>
     <div class="section-label">Bolletta Gas — pagina 4</div>
     <div class="bolletta-guida">📄 Vai a <strong>pagina 4</strong> della bolletta. Trovi il <strong>consumo annuo</strong> del contatore.</div>
@@ -559,6 +577,7 @@ const state = {
   produzione_gas: false,
   // bolletta CF
   luce_quota_fissa: '', luce_prezzo_vendita: '', luce_potenza: '', luce_consumo_annuo: '',
+  luce_tipo_prezzo: '', gas_tipo_prezzo: '',
   luce_fatturazione_tipo: '', luce_mese_competenza: '',
   gas_quota_fissa: '', gas_prezzo_vendita: '', gas_consumo_annuo: '',
   gas_fatturazione_tipo: '', gas_mese_competenza: '',
@@ -662,6 +681,7 @@ function getValoreIndicePerMese(indice, meseStr) {
     if ((row.psbil||0) > 0) return row.psbil;
     return psvMwh > 0 ? (psvMwh / 93.54) + deltaBP : 0;
   }
+  if (indice === 'PSV') return psvMwh > 0 ? psvMwh / 93.54 : 0;   // €/Smc, come in Qualifica
   return 0;
 }
 function getMesiCompetenza(commodity) {
@@ -698,6 +718,13 @@ function setFatturazione(commodity, tipo) {
   const label = document.getElementById(commodity + '_mese_comp_label');
   if (label) label.textContent = tipo === 'Bimestrale' ? 'Primo mese del bimestre (dalla bolletta)' : 'Mese di competenza (dalla bolletta)';
   aggiornaMeseCompetenzaInfo(commodity);
+}
+function setTipoPrezzoAttuale(commodity, tipo) {
+  state[commodity + '_tipo_prezzo'] = tipo;
+  document.getElementById(commodity + '_tp_fisso').classList.toggle('selected', tipo === 'Fisso');
+  document.getElementById(commodity + '_tp_variabile').classList.toggle('selected', tipo === 'Variabile');
+  const errEl = document.getElementById('err_' + commodity + '_tipo_prezzo');
+  if (errEl) errEl.textContent = '';
 }
 function setMeseCompetenza(commodity, mese) {
   state[commodity + '_mese_competenza'] = mese;
@@ -1203,7 +1230,16 @@ function validateBolletta() {
     }
   };
 
+  const checkTipoPrezzo = (commodity) => {
+    const errEl = document.getElementById('err_' + commodity + '_tipo_prezzo');
+    if (!state[commodity + '_tipo_prezzo']) {
+      if (errEl) errEl.textContent = 'Indica se il tuo prezzo attuale è fisso o variabile.';
+      valid = false;
+    } else if (errEl) errEl.textContent = '';
+  };
+
   if (luceCF) {
+    checkTipoPrezzo('luce');
     checkNum('luce_quota_fissa',    'luce_quota_fissa');
     checkNum('luce_prezzo_vendita', 'luce_prezzo_vendita');
     checkNum('luce_potenza',        'luce_potenza');
@@ -1211,6 +1247,7 @@ function validateBolletta() {
     checkMeseCompetenza('luce');
   }
   if (gasCF) {
+    checkTipoPrezzo('gas');
     checkNum('gas_quota_fissa',    'gas_quota_fissa');
     checkNum('gas_prezzo_vendita', 'gas_prezzo_vendita');
     checkNum('gas_consumo_annuo',  'gas_consumo_annuo');
@@ -1241,9 +1278,48 @@ function mostraOffertaPersonalizzata() {
 // Termine fisso di confronto (quota fissa nostra, €/mese) e spread per
 // commodity — vedi criteri forniti da Giulio: formula unica, non più
 // una stima percentuale generica.
-const QUOTA_FISSA_RIFERIMENTO = 12;
-const SPREAD_LUCE = 0.009;
-const SPREAD_GAS = 0.09;
+// Dal 06/10/2026 (ver2.7) il confronto non usa più uno spread/quota fissa
+// "generici": per norma va indicato con quale fornitore e quale offerta è
+// fatto, quindi ogni cliente è confrontato con UNA offerta reale, scritta qui
+// con nome, indice, spread e quota fissa (valori del foglio Offerte_Agenzia,
+// scheda Store, al 06/10/2026 — scritti fissi nel file per scelta di Giulio:
+// "rimarranno per tanto tempo". Se cambiano, vanno aggiornati qui).
+// - Privati: PULSEE Per Te Luce Index / Per Te Gas Index
+// - Aziende: ENGAS sotto i 5.000 kWh (Luce) e fino a 5.000 Smc (Gas),
+//   AXPO Scegli Variabile sopra quelle soglie. Una soglia per commodity.
+// `adeguamento`: extra sullo spread sotto una soglia di consumo annuo (AXPO).
+const OFFERTE_SITO = {
+  Privato: {
+    luce: { fornitore:'PULSEE', nome:'Per Te Luce Index', indice:'PUN',   spread:0,     pcv_anno:108, unita:'€/kWh' },
+    gas:  { fornitore:'PULSEE', nome:'Per Te Gas Index',  indice:'PSbil', spread:0.042, pcv_anno:108, unita:'€/Smc' }
+  },
+  Azienda: {
+    luce: {
+      engas: { fornitore:'ENGAS', nome:'Luce Variabile (< 50.000 kWh)', indice:'PUN', spread:0.016, pcv_anno:156, unita:'€/kWh' },
+      axpo:  { fornitore:'AXPO',  nome:'Luce Variabile (> 3.000 kWh)',  indice:'PUN', spread:0.009, pcv_anno:168, unita:'€/kWh',
+               adeguamento:{ soglia_annua:50000, extra:0.005 } }
+    },
+    gas: {
+      engas: { fornitore:'ENGAS', nome:'Gas Variabile (< 5.000 Smc)', indice:'PSV',   spread:0.08, pcv_anno:82,  unita:'€/Smc' },
+      axpo:  { fornitore:'AXPO',  nome:'Gas Variabile (> 5.000 Smc)', indice:'PSbil', spread:0.09, pcv_anno:168, unita:'€/Smc',
+               adeguamento:{ soglia_annua:5000, extra:0.02 } }
+    }
+  }
+};
+// Sotto questa soglia l'Azienda è confrontata con ENGAS, da qui in su con AXPO
+// (Luce: < 5.000 kWh ENGAS; Gas: <= 5.000 Smc ENGAS, AXPO Scegli parte da 5.001).
+const SOGLIA_ENGAS_AZIENDA = { luce: 5000, gas: 5000 };
+
+function getOffertaRiferimento(commodity, consumoAnnuo) {
+  if (state.tipo_cliente !== 'Azienda') return OFFERTE_SITO.Privato[commodity];
+  const blocco = OFFERTE_SITO.Azienda[commodity];
+  const sotto = commodity === 'luce' ? consumoAnnuo < SOGLIA_ENGAS_AZIENDA.luce : consumoAnnuo <= SOGLIA_ENGAS_AZIENDA.gas;
+  return sotto ? blocco.engas : blocco.axpo;
+}
+function getSpreadEffettivo(offerta, consumoAnnuo) {
+  const a = offerta.adeguamento;
+  return (a && consumoAnnuo < a.soglia_annua) ? offerta.spread + a.extra : offerta.spread;
+}
 // Perdite di rete: il prezzo che il cliente paga in bolletta le include già,
 // mentre il PUN/indice di mercato è "a monte" e non le contiene — senza
 // questo fattore il confronto sovrastima il risparmio sulla Luce. Non si
@@ -1272,50 +1348,67 @@ function getAreraPerMesi(campo, mesi) {
   return valori.reduce((a, b) => a + b, 0) / valori.length;
 }
 
-// Proiezione reale mese per mese (stesso principio degli altri tool): per
-// ognuno dei prossimi N mesi da oggi si prende l'indice di quel preciso
-// mese (reale se assestato, stimato dal TTF altrimenti) e si somma la
-// differenza rispetto al prezzo del cliente — non un singolo valore
-// annualizzato esteso "a piatto".
-function calcolaRisparmioProiezione(commodity, indice, spread, nMesi) {
-  const quotaFissa    = parseFloat(state[commodity + '_quota_fissa']);
-  const prezzoVendita = parseFloat(state[commodity + '_prezzo_vendita']);
-  const consumoAnnuo  = parseFloat(state[commodity + '_consumo_annuo']);
-  if (isNaN(quotaFissa) || isNaN(prezzoVendita) || isNaN(consumoAnnuo) || !datiMercatoRemoti) return null;
-
-  const consumoMensile = consumoAnnuo / 12;
+// Proiezione mese per mese, stesso metodo di Qualifica (ver5.22):
+// - parte dal 1° del mese in cui entra in fornitura: M+2 (cambio fornitore)
+// - "attuale": prezzo piatto se il cliente è su un fisso; se è su un variabile
+//   segue l'indice (PUN per la Luce, PSV per il Gas) + spread implicito,
+//   ricavato dal mese di competenza della bolletta
+// - "nostra offerta": (indice + spread) × perdite di rete (solo Luce) +
+//   componenti ARERA (mai moltiplicate per le perdite di rete)
+// - differenza mese per mese su energia + quota fissa, per 12 e 36 mesi
+function getMeseInizioFornitura() {
   const oggi = new Date();
-  const posCorrente = oggi.getFullYear() * 12 + oggi.getMonth();
+  return new Date(oggi.getFullYear(), oggi.getMonth() + 2, 1);
+}
+function calcolaProiezioneSito(commodity) {
+  const quotaFissaCliente = parseFloat(state[commodity + '_quota_fissa']);
+  const prezzoCliente     = parseFloat(state[commodity + '_prezzo_vendita']);
+  const consumoAnnuo      = parseFloat(state[commodity + '_consumo_annuo']);
+  if (isNaN(quotaFissaCliente) || isNaN(prezzoCliente) || isNaN(consumoAnnuo) || !datiMercatoRemoti) return null;
 
-  let totaleEnergia = 0;
-  let mesiTrovati = 0;
-  for (let i = 0; i < nMesi; i++) {
-    const posTarget = posCorrente + i;
-    const row = (datiMercatoRemoti.serie_storica || []).find(r => mesePosizione(r.mese) === posTarget);
-    if (!row) continue;
-    const indiceValoreMese = getValoreIndicePerMese(indice, row.mese);
-    if (indiceValoreMese <= 0) continue;
+  const offerta = getOffertaRiferimento(commodity, consumoAnnuo);
+  const spread = getSpreadEffettivo(offerta, consumoAnnuo);
+  const isLuce = commodity === 'luce';
+  const moltPerdite = isLuce ? FATTORE_PERDITE_RETE_LUCE : 1;
+  const indiceRif = isLuce ? 'PUN' : 'PSV';
 
-    // Per la Luce, oltre allo spread pubblico si aggiungono le componenti
-    // ARERA di dispacciamento: CDISP per i clienti Privati (maggior tutela),
-    // Dispacciamento + Capacity Market per le Aziende (mercato libero).
-    // Il tutto va poi maggiorato del fattore perdite di rete (solo Luce),
-    // per essere confrontabile col prezzo finale in bolletta del cliente.
-    let extra = 0;
-    let fattorePerdite = 1;
-    if (commodity === 'luce') {
-      extra = state.tipo_cliente === 'Azienda'
-        ? getAreraPerMesi('dispacciamento', [row.mese]) + getAreraPerMesi('capacity_mkt', [row.mese])
-        : getAreraPerMesi('cdispd', [row.mese]);
-      fattorePerdite = FATTORE_PERDITE_RETE_LUCE;
-    }
-    totaleEnergia += (prezzoVendita - (indiceValoreMese + spread + extra) * fattorePerdite) * consumoMensile;
-    mesiTrovati++;
+  let spreadImplicito = 0;
+  if (state[commodity + '_tipo_prezzo'] !== 'Fisso') {
+    const mesiComp = getMesiCompetenza(commodity);
+    const valRif = mesiComp.length > 0 ? getIndicePerMesi(indiceRif, mesiComp) : 0;
+    if (valRif > 0) spreadImplicito = prezzoCliente - valRif;
   }
-  if (mesiTrovati === 0) return null;
 
-  const termineQuotaFissa = (quotaFissa - QUOTA_FISSA_RIFERIMENTO) * mesiTrovati;
-  return termineQuotaFissa + totaleEnergia;
+  const inizio = getMeseInizioFornitura();
+  const posInizio = inizio.getFullYear() * 12 + inizio.getMonth();
+  const consumoMensile = consumoAnnuo / 12;
+  const mesi = [];
+  for (let i = 0; i < 36; i++) {
+    const row = (datiMercatoRemoti.serie_storica || []).find(r => mesePosizione(r.mese) === posInizio + i);
+    if (!row) continue;
+    const valIndice = getValoreIndicePerMese(offerta.indice, row.mese);
+    if (valIndice <= 0) continue;
+    const areraMese = !isLuce ? 0 : (state.tipo_cliente === 'Azienda'
+      ? getAreraPerMesi('dispacciamento', [row.mese]) + getAreraPerMesi('capacity_mkt', [row.mese])
+      : getAreraPerMesi('cdispd', [row.mese]));
+    const nostro = (valIndice + spread) * moltPerdite + areraMese;
+    let attuale;
+    if (state[commodity + '_tipo_prezzo'] === 'Fisso') attuale = prezzoCliente;
+    else {
+      const valRifMese = getValoreIndicePerMese(indiceRif, row.mese);
+      if (valRifMese <= 0) continue;
+      attuale = valRifMese + spreadImplicito;
+    }
+    const costoAttuale = attuale * consumoMensile + quotaFissaCliente;
+    const costoNostro  = nostro * consumoMensile + offerta.pcv_anno / 12;
+    mesi.push({ mese: row.mese, differenza: costoAttuale - costoNostro });
+  }
+  return { offerta, spread, consumoAnnuo, mesi };
+}
+function calcolaRisparmioSito(commodity, nMesi) {
+  const pr = calcolaProiezioneSito(commodity);
+  if (!pr || pr.mesi.length === 0) return null;
+  return pr.mesi.slice(0, nMesi).reduce((a, m) => a + m.differenza, 0);
 }
 
 function costruisciBloccoRisparmio(etichetta, valoreLuce, valoreGas, nMesi) {
@@ -1335,10 +1428,10 @@ function mostraRisparmioStimato() {
   const luceCF = document.getElementById('bollettaLuceSection').style.display !== 'none';
   const gasCF  = document.getElementById('bollettaGasSection').style.display  !== 'none';
 
-  const luce12 = luceCF ? calcolaRisparmioProiezione('luce', 'PUN', SPREAD_LUCE, 12) : null;
-  const luce36 = luceCF ? calcolaRisparmioProiezione('luce', 'PUN', SPREAD_LUCE, 36) : null;
-  const gas12  = gasCF  ? calcolaRisparmioProiezione('gas', 'PSbil', SPREAD_GAS, 12) : null;
-  const gas36  = gasCF  ? calcolaRisparmioProiezione('gas', 'PSbil', SPREAD_GAS, 36) : null;
+  const luce12 = luceCF ? calcolaRisparmioSito('luce', 12) : null;
+  const luce36 = luceCF ? calcolaRisparmioSito('luce', 36) : null;
+  const gas12  = gasCF  ? calcolaRisparmioSito('gas', 12) : null;
+  const gas36  = gasCF  ? calcolaRisparmioSito('gas', 36) : null;
 
   if (luce12 === null && gas12 === null) {
     // Dati di mercato non disponibili o insufficienti per un calcolo reale:
@@ -1348,6 +1441,22 @@ function mostraRisparmioStimato() {
   }
 
   let blocchi = '';
+  // Offerta usata per il confronto (obbligo di indicarla: fornitore + offerta)
+  const fmt3 = v => v.toFixed(3).replace('.', ',');
+  const boxOfferta = (commodity, icona, etichetta) => {
+    const pr = calcolaProiezioneSito(commodity);
+    if (!pr) return '';
+    const o = pr.offerta;
+    const extra = (o.adeguamento && pr.consumoAnnuo < o.adeguamento.soglia_annua)
+      ? ` (${fmt3(o.spread)} + ${fmt3(o.adeguamento.extra)} per consumi sotto ${o.adeguamento.soglia_annua.toLocaleString('it-IT')} ${commodity === 'luce' ? 'kWh' : 'Smc'}/anno)` : '';
+    return `<div class="agevolazione-block" style="margin-bottom:10px;">
+      <div class="agevolazione-title">${icona} ${etichetta} — offerta di confronto</div>
+      <strong>${o.fornitore} — ${o.nome}</strong><br/>
+      <span style="font-size:.85rem;">Offerta indicizzata: ${o.indice} + ${fmt3(pr.spread)} ${o.unita}${extra} · quota fissa ${o.pcv_anno.toFixed(0)} €/anno (${(o.pcv_anno/12).toFixed(2).replace('.', ',')} €/mese)</span>
+    </div>`;
+  };
+  if (luce12 !== null) blocchi += boxOfferta('luce', '💡', 'Luce');
+  if (gas12  !== null) blocchi += boxOfferta('gas', '🔥', 'Gas');
   if (luce12 !== null) blocchi += costruisciBloccoRisparmio('Energia', luce12, null, 12);
   if (luce36 !== null) blocchi += costruisciBloccoRisparmio('Energia', luce36, null, 36);
   if (gas12  !== null) blocchi += costruisciBloccoRisparmio('Gas', null, gas12, 12);
@@ -1359,12 +1468,17 @@ function mostraRisparmioStimato() {
     blocchi += costruisciBloccoRisparmio('Totale (Energia + Gas)', luce36, gas36, 36);
   }
 
+  const inizioForn = getMeseInizioFornitura();
+  const meseInizioTxt = inizioForn.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
   document.getElementById('risparmioStimatoSubtitle').textContent =
-    'Ecco la differenza rispetto a quanto paghi oggi, calcolata sui dati di mercato aggiornati e sui consumi che hai indicato.';
+    'Ecco la differenza rispetto a quanto paghi oggi, confrontando la tua bolletta con l\'offerta indicata qui sotto. Calcolata sui dati di mercato aggiornati e sui consumi che hai indicato, dal 1° ' + meseInizioTxt + ' (data di inizio fornitura ipotizzata).';
   document.getElementById('risparmioStimatoBox').innerHTML = blocchi;
   document.getElementById('risparmioEyebrow').textContent = 'La tua stima';
   document.getElementById('risparmioTitolo').textContent = 'Il tuo risparmio stimato';
-  document.getElementById('risparmioNota').style.display = '';
+  const notaEl = document.getElementById('risparmioNota');
+  notaEl.style.display = '';
+  notaEl.innerHTML = 'I valori sono calcolati sulla base dei dati di mercato disponibili in data ' + new Date().toLocaleDateString('it-IT') +
+    ' e nell\'ipotesi di invarianza delle condizioni di partenza (consumi dichiarati, categoria contrattuale, componenti regolate). Eventuali variazioni successive dei mercati energetici o dei dati di partenza possono determinare differenze rispetto ai valori riportati. Si riferiscono al solo costo della spesa per la materia energia elettrica e/o gas naturale, al netto di oneri di sistema, imposte e IVA. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.';
 
   goTo('risparmio_stimato');
 }
@@ -1397,6 +1511,10 @@ function inviaEVaiCalendly() {
     servizio_q3: state.servizio_q3 === 'si' ? 'Sì' : 'No',
     servizio_q4: state.servizio_q4 === 'si' ? 'Sì' : 'No',
     servizio_q5: state.servizio_q5 === 'si' ? 'Sì' : 'No',
+    luce_tipo_prezzo: state.luce_tipo_prezzo || '—',
+    gas_tipo_prezzo: state.gas_tipo_prezzo || '—',
+    offerta_confronto_luce: (state.luce_consumo_annuo && !offertaPersonalizzata) ? (getOffertaRiferimento('luce', parseFloat(state.luce_consumo_annuo)).fornitore + ' — ' + getOffertaRiferimento('luce', parseFloat(state.luce_consumo_annuo)).nome) : '—',
+    offerta_confronto_gas: (state.gas_consumo_annuo && !offertaPersonalizzata) ? (getOffertaRiferimento('gas', parseFloat(state.gas_consumo_annuo)).fornitore + ' — ' + getOffertaRiferimento('gas', parseFloat(state.gas_consumo_annuo)).nome) : '—',
     offerta_personalizzata: offertaPersonalizzata ? 'Sì' : 'No',
     consumo_combinato_kwh: consumoCombinatoKwh || '—',
     calendly_assegnato: getCalendlyUrlAssegnato() === CALENDLY_URL_GIULIO ? 'Giulio' : 'Arianna'
