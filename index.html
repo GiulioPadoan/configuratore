@@ -129,6 +129,16 @@
   .agevolazione-block strong { color: #166534; }
   .agevolazione-title { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #166534; margin-bottom: 6px; }
 
+  /* SCHERMATA FINALE — tre blocchi (Luce, Gas, Totale), ver2.9 */
+  .risultato-card { background:#fff; border:1px solid var(--grey-200,#E2E8F0); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+  .risultato-card.tot { background:var(--blu-pale,#EBF0FA); border-color:#BFD0EE; }
+  .risultato-titolo { font-weight:700; color:var(--blu); font-size:.95rem; margin-bottom:4px; }
+  .risultato-offerta { font-weight:700; font-size:.95rem; color:var(--grey-900,#0F172A); }
+  .risultato-dettaglio { font-size:.78rem; color:var(--grey-600,#475569); margin:2px 0 8px; line-height:1.45; }
+  .risultato-riga { display:flex; justify-content:space-between; align-items:center; gap:12px; border-top:1px solid var(--grey-200,#E2E8F0); padding:8px 0; font-size:.9rem; }
+  .risultato-riga:first-of-type { border-top:0; }
+  .risultato-leggenda { font-size:.75rem; color:var(--grey-600,#475569); margin:0 0 12px; }
+
   /* BUTTONS */
   .btn-primary {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -1311,6 +1321,63 @@ const OFFERTE_SITO = {
     }
   }
 };
+// ── Prezzi/nomi letti dalla scheda "Sito" del foglio Offerte_Agenzia ──
+// (ver2.9, 08/10/2026). La scheda contiene SOLO le offerte che il sito usa,
+// con i prezzi finali; la chiave dà accesso solo a quella scheda (non a
+// Store). Se il download fallisce o i dati non sono completi, restano i
+// valori scritti qui sopra in OFFERTE_SITO: nome e prezzi non spariscono mai
+// dalla schermata finale (la norma li richiede). Il foglio vince sempre
+// quando risponde bene.
+const PREZZI_SITO_URL = 'https://script.google.com/macros/s/AKfycbyohWKqwcKXRsYCmvhQ-feYTmg1QHGP9xYLjUNxmmLG2VGQ6J1e4TqX4VO_Q4lzum6t/exec?tool=sito&chiave=sito-v8i03-m7kmd-bb7wn-r66er';
+let prezziSitoDaFoglio = false;
+const MAPPA_PREZZI_SITO = [
+  { path:['PULSEE','privato','luce','variabile'], target:() => OFFERTE_SITO.Privato.luce },
+  { path:['PULSEE','privato','gas','variabile'],  target:() => OFFERTE_SITO.Privato.gas },
+  { path:['ENGAS','azienda','luce','variabile'],  target:() => OFFERTE_SITO.Azienda.luce.engas },
+  { path:['ENGAS','azienda','gas','variabile'],   target:() => OFFERTE_SITO.Azienda.gas.engas },
+  { path:['AXPO','azienda','luce','variabile'],   target:() => OFFERTE_SITO.Azienda.luce.axpo },
+  { path:['AXPO','azienda','gas','variabile'],    target:() => OFFERTE_SITO.Azienda.gas.axpo }
+];
+function applicaPrezziSito(offerte) {
+  // Applica solo se TUTTE e 6 le offerte sono complete e coerenti: meglio la
+  // riserva nel file che un mix di dati nuovi e vecchi.
+  const nuovi = [];
+  for (const m of MAPPA_PREZZI_SITO) {
+    const o = m.path.reduce((x, k) => x && x[k], offerte);
+    const ok = o && typeof o.nome === 'string' && o.nome.trim() && typeof o.indice === 'string'
+      && Number.isFinite(o.spread) && Number.isFinite(o.pcv_anno) && o.pcv_anno > 0;
+    if (!ok) return false;
+    nuovi.push(o);
+  }
+  MAPPA_PREZZI_SITO.forEach((m, i) => {
+    const t = m.target(), o = nuovi[i];
+    t.nome = o.nome.trim(); t.indice = o.indice; t.spread = o.spread; t.pcv_anno = o.pcv_anno;
+    if (Number.isFinite(o.adeguamento_soglia_kwh) && Number.isFinite(o.adeguamento_extra_kwh)) {
+      t.adeguamento = { soglia_annua: o.adeguamento_soglia_kwh, extra: o.adeguamento_extra_kwh };
+    } else {
+      delete t.adeguamento;   // il foglio non prevede l'extra per questa offerta
+    }
+  });
+  prezziSitoDaFoglio = true;
+  return true;
+}
+function scaricaPrezziSito(tentativiRimasti) {
+  return fetch(PREZZI_SITO_URL + '&t=' + Date.now())
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+    .then(d => {
+      if (d && d.offerte && applicaPrezziSito(d.offerte)) return true;
+      return Promise.reject(new Error('Scheda Sito vuota o incompleta' + (d && d.errore ? ': ' + d.errore : '')));
+    })
+    .catch(e => {
+      if (tentativiRimasti > 0) {
+        return new Promise(res => setTimeout(res, 1000)).then(() => scaricaPrezziSito(tentativiRimasti - 1));
+      }
+      console.warn('Prezzi dalla scheda Sito non disponibili, uso i valori scritti nel file:', e.message);
+      return false;
+    });
+}
+const prezziSitoPromise = scaricaPrezziSito(2);
+
 // Sotto questa soglia l'Azienda è confrontata con ENGAS, da qui in su con AXPO
 // (Luce: < 5.000 kWh ENGAS; Gas: <= 5.000 Smc ENGAS, AXPO Scegli parte da 5.001).
 const SOGLIA_ENGAS_AZIENDA = { luce: 5000, gas: 5000 };
@@ -1416,20 +1483,17 @@ function calcolaRisparmioSito(commodity, nMesi) {
   return pr.mesi.slice(0, nMesi).reduce((a, m) => a + m.differenza, 0);
 }
 
-function costruisciBloccoRisparmio(etichetta, valoreLuce, valoreGas, nMesi) {
-  const haEntrambi = valoreLuce != null && valoreGas != null;
-  const valore = haEntrambi ? valoreLuce + valoreGas : (valoreLuce ?? valoreGas);
-  const segnoPositivo = valore > 0; // positivo = il cliente sta spendendo più di noi = risparmio
-  const colore = segnoPositivo ? '#166534' : '#dc2626';
-  const segno = segnoPositivo ? '-' : '+';
-  return `
-    <div class="agevolazione-block" style="margin-bottom:10px;">
-      <div class="agevolazione-title">${etichetta} — prossimi ${nMesi} mesi di fornitura</div>
-      <strong style="color:${colore} !important;">${segno} ${Math.abs(valore).toFixed(2)} €</strong> rispetto all'attuale
-    </div>`;
-}
 
 function mostraRisparmioStimato() {
+  // Aspetta che i dati di mercato e i prezzi dalla scheda Sito siano arrivati
+  // (a questo punto del percorso di solito lo sono già da un pezzo).
+  // Per i prezzi della scheda Sito si aspetta al massimo 4 secondi: oltre,
+  // si va avanti con i valori scritti nel file (mai schermata bloccata).
+  const attesaPrezzi = Promise.race([prezziSitoPromise, new Promise(r => setTimeout(r, 4000))]);
+  Promise.all([datiMercatoRemotiPromise, attesaPrezzi]).then(mostraRisparmioStimatoInterno);
+}
+
+function mostraRisparmioStimatoInterno() {
   const luceCF = document.getElementById('bollettaLuceSection').style.display !== 'none';
   const gasCF  = document.getElementById('bollettaGasSection').style.display  !== 'none';
 
@@ -1445,32 +1509,36 @@ function mostraRisparmioStimato() {
     return;
   }
 
-  let blocchi = '';
-  // Offerta usata per il confronto (obbligo di indicarla: fornitore + offerta)
+  // Tre blocchi: Luce, Gas, Totale. Ogni commodity mostra l'offerta usata per
+  // il confronto (obbligo di indicare fornitore e offerta) e le due cifre.
   const fmt3 = v => v.toFixed(3).replace('.', ',');
-  const boxOfferta = (commodity, icona, etichetta) => {
+  const eur = v => Math.abs(v).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  // positivo = il cliente spende meno di oggi → segno "−" in verde
+  const riga = (etichetta, v) => `<div class="risultato-riga"><span>${etichetta}</span><strong style="color:${v > 0 ? '#166534' : '#dc2626'} !important;">${v > 0 ? '−' : '+'} ${eur(v)}</strong></div>`;
+  const cardCommodity = (commodity, icona, etichetta, v12, v36) => {
     const pr = calcolaProiezioneSito(commodity);
-    if (!pr) return '';
+    if (!pr || v12 === null) return '';
     const o = pr.offerta;
+    const um = commodity === 'luce' ? 'kWh' : 'Smc';
     const extra = (o.adeguamento && pr.consumoAnnuo < o.adeguamento.soglia_annua)
-      ? ` (${fmt3(o.spread)} + ${fmt3(o.adeguamento.extra)} per consumi sotto ${o.adeguamento.soglia_annua.toLocaleString('it-IT')} ${commodity === 'luce' ? 'kWh' : 'Smc'}/anno)` : '';
-    return `<div class="agevolazione-block" style="margin-bottom:10px;">
-      <div class="agevolazione-title">${icona} ${etichetta} — offerta di confronto</div>
-      <strong>${o.fornitore} — ${o.nome}</strong><br/>
-      <span style="font-size:.85rem;">Offerta indicizzata: ${o.indice} + ${fmt3(pr.spread)} ${o.unita}${extra} · quota fissa ${o.pcv_anno.toFixed(0)} €/anno (${(o.pcv_anno/12).toFixed(2).replace('.', ',')} €/mese)</span>
+      ? ` (${fmt3(o.spread)} + ${fmt3(o.adeguamento.extra)} per consumi sotto ${o.adeguamento.soglia_annua.toLocaleString('it-IT')} ${um}/anno)` : '';
+    return `<div class="risultato-card">
+      <div class="risultato-titolo">${icona} ${etichetta}</div>
+      <div class="risultato-offerta">${o.fornitore} — ${o.nome}</div>
+      <div class="risultato-dettaglio">Offerta indicizzata: ${o.indice} + ${fmt3(pr.spread)} ${o.unita}${extra} · quota fissa ${o.pcv_anno.toFixed(0)} €/anno (${(o.pcv_anno/12).toFixed(2).replace('.', ',')} €/mese)</div>
+      ${riga('Prossimi 12 mesi', v12)}
+      ${v36 !== null ? riga('Prossimi 36 mesi', v36) : ''}
     </div>`;
   };
-  if (luce12 !== null) blocchi += boxOfferta('luce', '💡', 'Luce');
-  if (gas12  !== null) blocchi += boxOfferta('gas', '🔥', 'Gas');
-  if (luce12 !== null) blocchi += costruisciBloccoRisparmio('Energia', luce12, null, 12);
-  if (luce36 !== null) blocchi += costruisciBloccoRisparmio('Energia', luce36, null, 36);
-  if (gas12  !== null) blocchi += costruisciBloccoRisparmio('Gas', null, gas12, 12);
-  if (gas36  !== null) blocchi += costruisciBloccoRisparmio('Gas', null, gas36, 36);
+  let blocchi = '<p class="risultato-leggenda">Un importo con il segno <strong style="color:#166534">−</strong> significa che spenderesti meno di oggi, con il segno <strong style="color:#dc2626">+</strong> che spenderesti di più.</p>';
+  blocchi += cardCommodity('luce', '💡', 'Luce', luce12, luce36);
+  blocchi += cardCommodity('gas', '🔥', 'Gas', gas12, gas36);
   if (luce12 !== null && gas12 !== null) {
-    blocchi += costruisciBloccoRisparmio('Totale (Energia + Gas)', luce12, gas12, 12);
-  }
-  if (luce36 !== null && gas36 !== null) {
-    blocchi += costruisciBloccoRisparmio('Totale (Energia + Gas)', luce36, gas36, 36);
+    blocchi += `<div class="risultato-card tot">
+      <div class="risultato-titolo">Totale Luce + Gas</div>
+      ${riga('Prossimi 12 mesi', luce12 + gas12)}
+      ${(luce36 !== null && gas36 !== null) ? riga('Prossimi 36 mesi', luce36 + gas36) : ''}
+    </div>`;
   }
 
   const inizioForn = getMeseInizioFornitura();
