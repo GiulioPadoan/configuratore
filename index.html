@@ -1284,6 +1284,11 @@ function mostraOffertaPersonalizzata() {
 // con nome, indice, spread e quota fissa (valori del foglio Offerte_Agenzia,
 // scheda Store, al 06/10/2026 — scritti fissi nel file per scelta di Giulio:
 // "rimarranno per tanto tempo". Se cambiano, vanno aggiornati qui).
+// IMPORTANTE: il sito usa SEMPRE E SOLO offerte variabili/indicizzate, mai
+// prezzi fissi (decisione di Giulio 07/10/2026: i variabili restano uguali nel
+// tempo, i fissi cambiano). Aggiornamento 07/10/2026: ENGAS Gas Azienda
+// spread 0,10 €/Smc; nomi commerciali ENGAS "Engas Bianca PUN16"/"Engas
+// Bianca PSV10", AXPO "Scegli Dinamico 2.0"/"Scegli Dinamico Gas 2.0".
 // - Privati: PULSEE Per Te Luce Index / Per Te Gas Index
 // - Aziende: ENGAS sotto i 5.000 kWh (Luce) e fino a 5.000 Smc (Gas),
 //   AXPO Scegli Variabile sopra quelle soglie. Una soglia per commodity.
@@ -1295,13 +1300,13 @@ const OFFERTE_SITO = {
   },
   Azienda: {
     luce: {
-      engas: { fornitore:'ENGAS', nome:'Luce Variabile (< 50.000 kWh)', indice:'PUN', spread:0.016, pcv_anno:156, unita:'€/kWh' },
-      axpo:  { fornitore:'AXPO',  nome:'Luce Variabile (> 3.000 kWh)',  indice:'PUN', spread:0.009, pcv_anno:168, unita:'€/kWh',
+      engas: { fornitore:'ENGAS', nome:'Engas Bianca PUN16', indice:'PUN', spread:0.016, pcv_anno:156, unita:'€/kWh' },
+      axpo:  { fornitore:'AXPO',  nome:'Scegli Dinamico 2.0',           indice:'PUN', spread:0.009, pcv_anno:168, unita:'€/kWh',
                adeguamento:{ soglia_annua:50000, extra:0.005 } }
     },
     gas: {
-      engas: { fornitore:'ENGAS', nome:'Gas Variabile (< 5.000 Smc)', indice:'PSV',   spread:0.08, pcv_anno:82,  unita:'€/Smc' },
-      axpo:  { fornitore:'AXPO',  nome:'Gas Variabile (> 5.000 Smc)', indice:'PSbil', spread:0.09, pcv_anno:168, unita:'€/Smc',
+      engas: { fornitore:'ENGAS', nome:'Engas Bianca PSV10', indice:'PSV',   spread:0.10, pcv_anno:82,  unita:'€/Smc' },
+      axpo:  { fornitore:'AXPO',  nome:'Scegli Dinamico Gas 2.0', indice:'PSbil', spread:0.09, pcv_anno:168, unita:'€/Smc',
                adeguamento:{ soglia_annua:5000, extra:0.02 } }
     }
   }
