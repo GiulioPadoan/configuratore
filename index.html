@@ -553,11 +553,11 @@
 <!-- ═══ STEP 8b — RISPARMIO STIMATO (solo Cambio Fornitore) ═══ -->
 <div class="card" id="step_risparmio_stimato" style="display:none">
   <div class="eyebrow" id="risparmioEyebrow">La tua stima</div>
-  <div class="display" id="risparmioTitolo">Il tuo risparmio stimato</div>
+  <div class="display" id="risparmioTitolo">Il confronto con la tua bolletta</div>
   <p class="subtitle" id="risparmioStimatoSubtitle" style="margin-bottom:16px;"></p>
   <div id="risparmioStimatoBox"></div>
   <div class="info-block" id="risparmioNota" style="margin-top:8px;">
-    Stima calcolata sui dati di mercato aggiornati e sui consumi che hai indicato — al variare dei consumi può variare anche la stima di risparmio. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.
+    Stima calcolata sui dati di mercato aggiornati e sui consumi che hai indicato: al variare dei consumi cambia anche la stima. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.
   </div>
   <div class="btn-row" style="margin-top:24px;">
     <button class="btn-back" onclick="goTo('bolletta_cf')">‹ Indietro</button>
@@ -1588,7 +1588,7 @@ function mostraRisparmioStimatoInterno() {
     'Ecco la differenza rispetto a quanto paghi oggi, confrontando la tua bolletta con l\'offerta indicata qui sotto. Calcolata sui dati di mercato aggiornati e sui consumi che hai indicato, dal 1° ' + meseInizioTxt + ' (data di inizio fornitura ipotizzata).';
   document.getElementById('risparmioStimatoBox').innerHTML = blocchi;
   document.getElementById('risparmioEyebrow').textContent = 'La tua stima';
-  document.getElementById('risparmioTitolo').textContent = 'Il tuo risparmio stimato';
+  document.getElementById('risparmioTitolo').textContent = 'Il confronto con la tua bolletta';
   const notaEl = document.getElementById('risparmioNota');
   notaEl.style.display = '';
   notaEl.innerHTML = 'I valori sono calcolati sulla base dei dati di mercato disponibili in data ' + new Date().toLocaleDateString('it-IT') +
