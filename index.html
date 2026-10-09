@@ -242,27 +242,8 @@
     <span class="proof-stars">★★★★★</span>
     <span class="proof-text"><strong>4,9 / 5</strong> su 74 recensioni Google</span>
   </div>
-  <button class="btn-primary" onclick="goTo('email')">Inizia ›</button>
+  <button class="btn-primary" onclick="goTo('tipo_cliente')">Inizia ›</button>
 </div>
-
-<!-- ═══ STEP 0 — EMAIL ═══ -->
-<div class="card" id="step_email" style="display:none">
-  <div class="eyebrow">Prima di iniziare</div>
-  <div class="display" style="font-size:1.4rem;">Qual è la tua email?</div>
-  <p class="subtitle">La useremo per abbinare la tua configurazione alla prenotazione dell'appuntamento.</p>
-  <div class="field">
-    <label for="email_input">Indirizzo email *</label>
-    <input type="email" id="email_input" placeholder="es. mario.rossi@email.it"/>
-    <span class="field-error" id="err_email"></span>
-  </div>
-  <div class="privacy-row">
-    <input type="checkbox" id="chk_privacy"/>
-    <label for="chk_privacy">Ho letto e accetto l'<a href="https://www.iubenda.com/privacy-policy/85954225" target="_blank" rel="noopener">Informativa sulla Privacy</a> e acconsento al trattamento dei miei dati per essere ricontattato/a. *</label>
-  </div>
-  <div id="err_privacy">Devi accettare l'informativa sulla privacy per continuare.</div>
-  <button class="btn-primary" onclick="validateEmail()">Inizia ›</button>
-</div>
-
 
 <!-- ═══ STEP 1 — TIPO CLIENTE ═══ -->
 <div class="card" id="step_tipo_cliente" style="display:none">
@@ -282,7 +263,7 @@
   </div>
   <div id="err_tipo_cliente" class="error-msg">Seleziona il tipo di cliente per continuare.</div>
   <div class="btn-row">
-    <button class="btn-back" onclick="goTo('email')">‹ Indietro</button>
+    <button class="btn-back" onclick="goTo('intro')">‹ Indietro</button>
     <button class="btn-primary" onclick="validateTipoCliente()">Avanti ›</button>
   </div>
 </div>
@@ -608,6 +589,11 @@
   </div>
 
   <div class="info-block">📱 Ti scriviamo su <strong>WhatsApp</strong> dal numero <strong>347 866 5252</strong>. Salvalo in rubrica così riconosci il messaggio.</div>
+  <div class="privacy-row" style="margin-top:16px;">
+    <input type="checkbox" id="chk_privacy"/>
+    <label for="chk_privacy">Ho letto e accetto l'<a href="https://www.iubenda.com/privacy-policy/85954225" target="_blank" rel="noopener">Informativa sulla Privacy</a> e acconsento al trattamento dei miei dati per essere ricontattato/a. *</label>
+  </div>
+  <div id="err_privacy">Devi accettare l'informativa sulla privacy per inviare la richiesta.</div>
   <span class="field-error" id="err_invio" style="text-align:center;"></span>
   <div class="btn-row" style="margin-top:16px;">
     <button class="btn-back" onclick="indietroDaCanale()">‹ Indietro</button>
@@ -859,40 +845,6 @@ function updateProgress(id) {
   if (lbl) lbl.textContent = (STEP_LABELS[step] || ('Step ' + step + ' di 4'));
 }
 
-// ── STEP 0 — EMAIL ───────────────────────────────────────────
-function validateEmail() {
-  const el = document.getElementById('email_input');
-  const errEl = document.getElementById('err_email');
-  const val = el.value.trim();
-  const chkPrivacy = document.getElementById('chk_privacy');
-  const errPrivacyEl = document.getElementById('err_privacy');
-  let valid = true;
-
-  if (!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-    el.classList.add('error');
-    errEl.textContent = 'Inserisci un indirizzo email valido.';
-    valid = false;
-  } else {
-    el.classList.remove('error');
-    errEl.textContent = '';
-  }
-
-  if (!chkPrivacy.checked) {
-    errPrivacyEl.style.display = 'block';
-    valid = false;
-  } else {
-    errPrivacyEl.style.display = 'none';
-  }
-
-  if (!valid) return;
-
-  state.email = val;
-  // Traccia consenso con timestamp: serve come prova verificabile del
-  // consenso raccolto (checkbox non pre-spuntata), non solo il flag.
-  state.privacy_accettata = true;
-  state.privacy_accettata_il = new Date().toISOString();
-  goTo('tipo_cliente');
-}
 
 // ── STEP 1 — TIPO CLIENTE ─────────────────────────────────
 function seleziona(campo, valore, el) {
@@ -1599,7 +1551,7 @@ function mostraRisparmioStimatoInterno() {
 
 function costruisciPayloadBase() {
   return {
-    email: state.email,
+    email: state.email || '—',
     privacy_accettata: state.privacy_accettata ? 'Sì' : 'No',
     privacy_accettata_il: state.privacy_accettata_il || '—',
     tipo_cliente: state.tipo_cliente,
@@ -1691,7 +1643,15 @@ function inviaRichiestaAppuntamento() {
   const cifre = campo('rich_telefono').value.replace(/\D/g, '');
   controlla('rich_telefono', cifre.length >= 8 && cifre.length <= 15, 'Inserisci un numero di telefono valido.');
   if (state.canale === 'sede') controlla('rich_indirizzo', campo('rich_indirizzo').value.trim().length > 5, 'Indica l\'indirizzo della sede.');
+  // Consenso privacy: raccolto QUI, dove si chiedono nome e telefono (prima
+  // stava nello step email, tolto in ver2.14). Checkbox non pre-spuntata,
+  // con timestamp come prova del consenso.
+  const privacyOk = campo('chk_privacy').checked;
+  campo('err_privacy').style.display = privacyOk ? 'none' : 'block';
+  if (!privacyOk) valido = false;
   if (!valido) return;
+  state.privacy_accettata = true;
+  state.privacy_accettata_il = new Date().toISOString();
 
   const c = CANALI_INCONTRO[state.canale];
   const payload = {
