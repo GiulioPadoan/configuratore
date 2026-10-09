@@ -817,7 +817,6 @@ const CANALI_INCONTRO = {
   videocall: { icona:'💻', titolo:'Videochiamata',         hint:'Su Google Meet', referente:'Giulio' },
   telefono:  { icona:'📞', titolo:'Telefonata',            hint:'Ti chiamiamo noi', referente:'Giulio' }
 };
-let leadInviato = false;
 let passoPrimaDelCanale = 'proposta';
 
 // SVG arrows
@@ -1642,18 +1641,14 @@ function inviaAMake(payload) {
   });
 }
 
-// Fine delle cifre (o della proposta, per chi non fa Cambio Fornitore): il
-// "lead" parte a Make come prima (stesso momento, stessi campi + tipo_invio),
-// poi si passa alla scelta del canale.
+// Fine delle cifre (o della proposta, per chi non fa Cambio Fornitore): si
+// passa alla scelta del canale. Dal 09/10/2026 (ver2.11) NON parte più nessun
+// invio "lead" a Make in questo punto: a Make arriva solo la richiesta di
+// appuntamento, quando il cliente invia il form (un solo invio, una sola
+// mail). Chi si ferma prima del form non lascia traccia.
 function vaiAllaScelta() {
   const visibile = [...document.querySelectorAll('.card')].find(c => c.style.display === 'block');
   if (visibile && visibile.id !== 'step_canale') passoPrimaDelCanale = visibile.id.replace('step_', '');
-
-  if (!leadInviato) {
-    leadInviato = true;
-    inviaAMake({ ...costruisciPayloadBase(), tipo_invio: 'lead' })
-      .then(() => console.log('Make: lead OK')).catch(e => console.warn('Make: errore', e));
-  }
 
   const isAzienda = state.tipo_cliente === 'Azienda';
   const opzioni = Object.entries(CANALI_INCONTRO).filter(([k, c]) => !c.soloAzienda || isAzienda);
