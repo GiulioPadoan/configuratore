@@ -193,8 +193,13 @@
   .proposta-bullet-icon { color: var(--cyan); font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
   .proposta-bullet-text { font-size: .85rem; color: var(--grey-700); line-height: 1.55; }
 
-  /* CALENDLY EMBED */
-  .calendly-wrap { margin-top: 16px; border-radius: var(--radius-sm); overflow: hidden; }
+  .field textarea {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--grey-200);
+    border-radius: var(--radius-sm); font-size: .88rem; font-family: inherit; resize: vertical; min-height: 70px;
+    color: var(--grey-700); background: var(--white); transition: border-color var(--trans);
+  }
+  .field textarea:focus { outline: none; border-color: var(--blu); }
+  .field textarea.error { border-color: #EF4444; }
 
   /* SUCCESS */
   .success-icon { font-size: 3rem; margin-bottom: 16px; display: block; text-align: center; }
@@ -432,7 +437,7 @@
   <div id="propostaBulletsWrap" style="margin-bottom:20px;"></div>
   <div class="info-block" id="propostaChiusura"></div>
   <div class="btn-row" style="margin-top:24px;">
-    <button class="btn-primary" onclick="goToDestinazione()">Prenota la tua consulenza ›</button>
+    <button class="btn-primary" id="propostaBtn" onclick="goToDestinazione()">Prenota la tua consulenza ›</button>
   </div>
 </div>
 
@@ -556,19 +561,66 @@
   </div>
   <div class="btn-row" style="margin-top:24px;">
     <button class="btn-back" onclick="goTo('bolletta_cf')">‹ Indietro</button>
-    <button class="btn-primary" onclick="inviaEVaiCalendly()">Prenota la tua consulenza ›</button>
+    <button class="btn-primary" onclick="vaiAllaScelta()">Prenota la tua consulenza ›</button>
   </div>
 </div>
 
-<!-- ═══ STEP 8c — CALENDLY ═══ -->
-<div class="card" id="step_calendly" style="display:none">
-  <div class="eyebrow">Prenota</div>
-  <div class="display">Scegli il momento migliore per Te</div>
-  <p class="subtitle" style="margin-bottom:16px;">Prenota direttamente il tuo appuntamento. Riceverai una conferma via email.</p>
-  <div class="calendly-wrap">
-    <div id="calendly_container" style="min-width:280px;height:700px;"></div>
-    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+<!-- ═══ STEP 9 — COME PREFERISCI INCONTRARCI ═══ -->
+<div class="card" id="step_canale" style="display:none">
+  <div class="eyebrow">Ultimo passo</div>
+  <div class="display">Come preferisci incontrarci?</div>
+  <p class="subtitle" style="margin-bottom:16px;">Scegli la modalità e lasciaci i tuoi dati: ti ricontattiamo noi per fissare giorno e ora.</p>
+
+  <div class="choice-grid col1" id="canaleOpzioni" style="margin-bottom:6px;"></div>
+  <span class="field-error" id="err_canale"></span>
+
+  <div class="field" id="campo_ragione_sociale" style="display:none;margin-top:10px;">
+    <label>Ragione sociale</label>
+    <input type="text" id="rich_ragione_sociale" placeholder="es. Rossi S.r.l."/>
+    <span class="field-error" id="err_rich_ragione_sociale"></span>
   </div>
+  <div class="field" style="margin-top:10px;">
+    <label>Nome e cognome</label>
+    <input type="text" id="rich_nome" placeholder="es. Mario Rossi" autocomplete="name"/>
+    <span class="field-error" id="err_rich_nome"></span>
+  </div>
+  <div class="field">
+    <label>Numero di telefono (WhatsApp)</label>
+    <input type="tel" id="rich_telefono" placeholder="es. 347 123 4567" autocomplete="tel"/>
+    <span class="field-error" id="err_rich_telefono"></span>
+  </div>
+  <div class="field" id="campo_indirizzo" style="display:none;">
+    <label>Indirizzo della sede (via, civico, comune)</label>
+    <input type="text" id="rich_indirizzo" placeholder="es. Via Roma 10, Verona"/>
+    <span class="field-error" id="err_rich_indirizzo"></span>
+  </div>
+  <div class="field">
+    <label>Quando preferisci essere ricontattato?</label>
+    <select id="rich_fascia">
+      <option value="Indifferente">Indifferente</option>
+      <option value="Mattina">Mattina</option>
+      <option value="Pomeriggio">Pomeriggio</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Vuoi aggiungere qualcosa? (facoltativo)</label>
+    <textarea id="rich_note" placeholder="es. giorni in cui non sei disponibile"></textarea>
+  </div>
+
+  <div class="info-block">📱 Ti scriviamo su <strong>WhatsApp</strong> dal numero <strong>347 866 5252</strong>. Salvalo in rubrica così riconosci il messaggio.</div>
+  <span class="field-error" id="err_invio" style="text-align:center;"></span>
+  <div class="btn-row" style="margin-top:16px;">
+    <button class="btn-back" onclick="indietroDaCanale()">‹ Indietro</button>
+    <button class="btn-primary" id="btnInviaRichiesta" onclick="inviaRichiestaAppuntamento()">Invia la richiesta ›</button>
+  </div>
+</div>
+
+<!-- ═══ STEP 10 — CONFERMA ═══ -->
+<div class="card" id="step_conferma" style="display:none">
+  <div class="eyebrow">Richiesta inviata</div>
+  <div class="display">Grazie, ci sentiamo su WhatsApp</div>
+  <p class="subtitle" id="confermaTesto" style="margin-bottom:16px;"></p>
+  <div class="info-block">📱 Ti scriviamo dal numero <strong>347 866 5252</strong>. Salvalo in rubrica così riconosci il messaggio.</div>
 </div>
 
 <script>
@@ -587,7 +639,7 @@ const state = {
   produzione_gas: false,
   // bolletta CF
   luce_quota_fissa: '', luce_prezzo_vendita: '', luce_potenza: '', luce_consumo_annuo: '',
-  luce_tipo_prezzo: '', gas_tipo_prezzo: '',
+  luce_tipo_prezzo: '', gas_tipo_prezzo: '', canale: '',
   luce_fatturazione_tipo: '', luce_mese_competenza: '',
   gas_quota_fissa: '', gas_prezzo_vendita: '', gas_consumo_annuo: '',
   gas_fatturazione_tipo: '', gas_mese_competenza: '',
@@ -599,8 +651,8 @@ const state = {
 // ═══════════════════════════════════════════
 // DATI DI MERCATO CONDIVISI — scaricati da GitHub (market-data.json),
 // dati pubblici (indici, nessun margine). Se il download fallisce, la
-// stima di risparmio reale non può essere calcolata: si torna al vecchio
-// step Calendly senza mostrare numeri inventati.
+// stima di risparmio reale non può essere calcolata: si passa direttamente
+// alla scelta del canale senza mostrare numeri inventati.
 // ═══════════════════════════════════════════
 const MARKET_DATA_URL = 'https://giuliopadoan.github.io/configuratore/market-data.json';
 let datiMercatoRemoti = null;
@@ -752,39 +804,21 @@ function aggiornaMeseCompetenzaInfo(commodity) {
 
 const MAKE_WEBHOOK = 'https://hook.eu1.make.com/gl4m4a1d6sgy0d1wyets4dun68af16zs';
 
-// ── SMISTAMENTO CALENDLY ─────────────────────────────────────
-// Residenziale va sempre da Arianna (appuntamento in Store). Azienda invece
-// si smista in base al consumo combinato (Luce in kWh + Gas in Smc, 1 Smc
-// gas = 10 kWh equivalenti): sotto soglia ad Arianna, sopra a Giulio — sopra
-// i 400.000 kWh resta comunque a Giulio per ora (soglia tenuta pronta per
-// quando si aggiungerà una nuova commerciale dedicata a quella fascia).
-const CALENDLY_URL_GIULIO  = 'https://calendly.com/giulio-iltuoconsulentedifiducia-jtrt/la-soluzione-energetica-giusta-per-te';
-const CALENDLY_URL_ARIANNA = 'https://calendly.com/clienti-iltuoconsulentedifiducia/consulenza-in-store';
-const SOGLIA_AZIENDA_GIULIO_KWH = 70000;
-const SOGLIA_AZIENDA_FUTURA_COMMERCIALE_KWH = 400000; // non ancora usata, vedi nota sopra
-const KWH_PER_SMC_GAS = 10;
-
-function getCalendlyUrlAssegnato() {
-  if (state.tipo_cliente !== 'Azienda') return CALENDLY_URL_ARIANNA;
-  const consumoLuce = parseFloat(state.luce_consumo_annuo) || 0;
-  const consumoGas  = parseFloat(state.gas_consumo_annuo) || 0;
-  const consumoCombinato = consumoLuce + (consumoGas * KWH_PER_SMC_GAS);
-  return consumoCombinato > SOGLIA_AZIENDA_GIULIO_KWH ? CALENDLY_URL_GIULIO : CALENDLY_URL_ARIANNA;
-}
-
-function apriCalendly() {
-  const url = getCalendlyUrlAssegnato();
-  const container = document.getElementById('calendly_container');
-  container.innerHTML = '';
-  const inizializza = () => {
-    if (window.Calendly && window.Calendly.initInlineWidget) {
-      window.Calendly.initInlineWidget({ url, parentElement: container });
-    } else {
-      setTimeout(inizializza, 200); // il widget.js (async) potrebbe non essere ancora pronto
-    }
-  };
-  inizializza();
-}
+// ── CANALI DI INCONTRO (ver2.10, 09/10/2026) ─────────────────
+// Calendly tolto (costo e lavoro di mantenerlo): il cliente sceglie come
+// incontrarci e lascia i dati in un form; lo ricontattiamo noi su WhatsApp
+// dal 347 866 5252. `referente` = chi gestisce quel canale (per ora Store
+// sempre Arianna, il resto Giulio; quando passerete cose ad Arianna si cambia
+// questa tabella). Privato: Store, Videochiamata, Telefonata. Azienda
+// (a qualsiasi consumo): in più "Presso la vostra sede".
+const CANALI_INCONTRO = {
+  store:     { icona:'🏬', titolo:'In negozio',            hint:'Nel nostro Store a Santa Maria di Zevio (VR), su appuntamento', referente:'Arianna' },
+  sede:      { icona:'🚗', titolo:'Presso la vostra sede', hint:'Veniamo noi da voi', referente:'Giulio', soloAzienda:true },
+  videocall: { icona:'💻', titolo:'Videochiamata',         hint:'Su Google Meet', referente:'Giulio' },
+  telefono:  { icona:'📞', titolo:'Telefonata',            hint:'Ti chiamiamo noi', referente:'Giulio' }
+};
+let leadInviato = false;
+let passoPrimaDelCanale = 'proposta';
 
 // SVG arrows
 const ARR_L = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
@@ -806,7 +840,7 @@ const STEP_PROGRESS = {
   utilizzo_luce: 3, utilizzo_gas: 3,
   agevolazioni: 3,
   servizio: 4, proposta: 4,
-  bolletta_cf: 4, risparmio_stimato: 4, calendly: 4
+  bolletta_cf: 4, risparmio_stimato: 4, canale: 4, conferma: 4
 };
 
 const STEP_LABELS = { 1:'Chi sei e cosa ti serve', 2:'Tipo di operazione', 3:'Utilizzo', 4:'La tua proposta' };
@@ -1173,7 +1207,15 @@ function buildEmostraProposta() {
   const sub = document.getElementById('propostaSubtitle');
   sub.textContent = content.subtitle;
   sub.style.display = content.subtitle ? '' : 'none';
-  document.getElementById('propostaChiusura').textContent = content.chiusura;
+  // Per chi fa un Cambio Fornitore il passo dopo NON è la prenotazione ma
+  // l'inserimento dei dati della bolletta (da lì si arriva alle cifre): testo
+  // e bottone devono dirlo, altrimenti il cliente pensa di prenotare.
+  const cfProposta = (state.commodity.includes('Luce') && state.op_luce === 'Cambio Fornitore')
+    || (state.commodity.includes('Gas') && state.op_gas === 'Cambio Fornitore');
+  document.getElementById('propostaChiusura').textContent = cfProposta
+    ? content.chiusura.replace(/Prenota la tua consulenza( — parliamoci)?\./, 'Inserisci i dati della tua bolletta e ti mostriamo il confronto con la nostra offerta.')
+    : content.chiusura;
+  document.getElementById('propostaBtn').innerHTML = cfProposta ? 'Controlla la tua bolletta ›' : 'Prenota la tua consulenza ›';
   const siKeys = PROPOSTA_PRIORITY.filter(k => state[k] === 'si').slice(0,3);
   const bulletsWrap = document.getElementById('propostaBulletsWrap');
   if (siKeys.length > 0 && profilo !== 'prezzo') {
@@ -1202,7 +1244,7 @@ function goToDestinazione() {
     datiMercatoRemotiPromise.then(popolaMesiCompetenza);
     goTo('bolletta_cf');
   } else {
-    inviaEVaiCalendly();
+    vaiAllaScelta();
   }
 }
 
@@ -1404,7 +1446,7 @@ const FATTORE_PERDITE_RETE_LUCE = 1.1;
 // FATTORE_SMC_IN_KWH — corretto in ver2.5, in ver2.4 era per errore x1). Sopra questa
 // soglia si va di offerte personalizzate: niente stima di risparmio (lo
 // spread pubblico sarebbe troppo alto per quel target e mostrerebbe un
-// risultato sfavorevole non reale), ma un messaggio e poi Calendly.
+// risultato sfavorevole non reale), ma un messaggio e poi la scelta del canale.
 const SOGLIA_CONSUMO_COMBINATO_KWH = 300000;
 const FATTORE_SMC_IN_KWH = 10;
 let offertaPersonalizzata = false;
@@ -1504,8 +1546,8 @@ function mostraRisparmioStimatoInterno() {
 
   if (luce12 === null && gas12 === null) {
     // Dati di mercato non disponibili o insufficienti per un calcolo reale:
-    // niente numeri inventati, si salta lo step e si va diretto a Calendly.
-    inviaEVaiCalendly();
+    // niente numeri inventati, si salta lo step e si va diretto alla scelta del canale.
+    vaiAllaScelta();
     return;
   }
 
@@ -1556,9 +1598,8 @@ function mostraRisparmioStimatoInterno() {
   goTo('risparmio_stimato');
 }
 
-function inviaEVaiCalendly() {
-  // Invia payload a Make in background
-  const payload = {
+function costruisciPayloadBase() {
+  return {
     email: state.email,
     privacy_accettata: state.privacy_accettata ? 'Sì' : 'No',
     privacy_accettata_il: state.privacy_accettata_il || '—',
@@ -1589,18 +1630,104 @@ function inviaEVaiCalendly() {
     offerta_confronto_luce: (state.luce_consumo_annuo && !offertaPersonalizzata) ? (getOffertaRiferimento('luce', parseFloat(state.luce_consumo_annuo)).fornitore + ' — ' + getOffertaRiferimento('luce', parseFloat(state.luce_consumo_annuo)).nome) : '—',
     offerta_confronto_gas: (state.gas_consumo_annuo && !offertaPersonalizzata) ? (getOffertaRiferimento('gas', parseFloat(state.gas_consumo_annuo)).fornitore + ' — ' + getOffertaRiferimento('gas', parseFloat(state.gas_consumo_annuo)).nome) : '—',
     offerta_personalizzata: offertaPersonalizzata ? 'Sì' : 'No',
-    consumo_combinato_kwh: consumoCombinatoKwh || '—',
-    calendly_assegnato: getCalendlyUrlAssegnato() === CALENDLY_URL_GIULIO ? 'Giulio' : 'Arianna'
+    consumo_combinato_kwh: consumoCombinatoKwh || '—'
   };
+}
 
-  fetch(MAKE_WEBHOOK, {
+function inviaAMake(payload) {
+  return fetch(MAKE_WEBHOOK, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
-  }).then(() => console.log('Make: invio OK')).catch(e => console.warn('Make: errore', e));
+  });
+}
 
-  apriCalendly();
-  goTo('calendly');
+// Fine delle cifre (o della proposta, per chi non fa Cambio Fornitore): il
+// "lead" parte a Make come prima (stesso momento, stessi campi + tipo_invio),
+// poi si passa alla scelta del canale.
+function vaiAllaScelta() {
+  const visibile = [...document.querySelectorAll('.card')].find(c => c.style.display === 'block');
+  if (visibile && visibile.id !== 'step_canale') passoPrimaDelCanale = visibile.id.replace('step_', '');
+
+  if (!leadInviato) {
+    leadInviato = true;
+    inviaAMake({ ...costruisciPayloadBase(), tipo_invio: 'lead' })
+      .then(() => console.log('Make: lead OK')).catch(e => console.warn('Make: errore', e));
+  }
+
+  const isAzienda = state.tipo_cliente === 'Azienda';
+  const opzioni = Object.entries(CANALI_INCONTRO).filter(([k, c]) => !c.soloAzienda || isAzienda);
+  document.getElementById('canaleOpzioni').innerHTML = opzioni.map(([k, c]) =>
+    `<div class="choice-card${state.canale === k ? ' selected' : ''}" id="canale_${k}" onclick="setCanale('${k}')">
+      <span class="choice-icon">${c.icona}</span>
+      <span class="choice-label">${c.titolo}<span class="choice-hint">${c.hint}</span></span>
+    </div>`).join('');
+  document.getElementById('campo_ragione_sociale').style.display = isAzienda ? 'block' : 'none';
+  document.getElementById('campo_indirizzo').style.display = state.canale === 'sede' ? 'block' : 'none';
+  goTo('canale');
+}
+
+function setCanale(k) {
+  state.canale = k;
+  Object.keys(CANALI_INCONTRO).forEach(x => {
+    const el = document.getElementById('canale_' + x);
+    if (el) el.classList.toggle('selected', x === k);
+  });
+  document.getElementById('campo_indirizzo').style.display = k === 'sede' ? 'block' : 'none';
+  document.getElementById('err_canale').textContent = '';
+}
+
+function indietroDaCanale() { goTo(passoPrimaDelCanale || 'proposta'); }
+
+function inviaRichiestaAppuntamento() {
+  const isAzienda = state.tipo_cliente === 'Azienda';
+  let valido = true;
+  const err = (id, msg) => { const e = document.getElementById('err_' + id); if (e) e.textContent = msg || ''; };
+  const campo = id => document.getElementById(id);
+  const controlla = (id, ok, msg) => {
+    campo(id).classList.toggle('error', !ok);
+    err(id, ok ? '' : msg);
+    if (!ok) valido = false;
+  };
+
+  if (!state.canale) { err('canale', 'Scegli come preferisci incontrarci.'); valido = false; } else err('canale', '');
+  if (isAzienda) controlla('rich_ragione_sociale', campo('rich_ragione_sociale').value.trim().length > 1, 'Indica la ragione sociale.');
+  controlla('rich_nome', campo('rich_nome').value.trim().length > 2, 'Indica nome e cognome.');
+  const cifre = campo('rich_telefono').value.replace(/\D/g, '');
+  controlla('rich_telefono', cifre.length >= 8 && cifre.length <= 15, 'Inserisci un numero di telefono valido.');
+  if (state.canale === 'sede') controlla('rich_indirizzo', campo('rich_indirizzo').value.trim().length > 5, 'Indica l\'indirizzo della sede.');
+  if (!valido) return;
+
+  const c = CANALI_INCONTRO[state.canale];
+  const payload = {
+    ...costruisciPayloadBase(),
+    tipo_invio: 'richiesta_appuntamento',
+    canale_incontro: c.titolo,
+    canale_codice: state.canale,
+    referente: c.referente,
+    ragione_sociale: isAzienda ? campo('rich_ragione_sociale').value.trim() : '—',
+    nome_cognome: campo('rich_nome').value.trim(),
+    telefono: campo('rich_telefono').value.trim(),
+    indirizzo_visita: state.canale === 'sede' ? campo('rich_indirizzo').value.trim() : '—',
+    fascia_oraria: campo('rich_fascia').value,
+    note_cliente: campo('rich_note').value.trim() || '—',
+    ricontatto: 'WhatsApp dal 347 866 5252'
+  };
+
+  const btn = campo('btnInviaRichiesta');
+  btn.disabled = true; btn.textContent = 'Invio in corso…';
+  err('invio', '');
+  const tenta = (n) => inviaAMake(payload)
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); })
+    .catch(e => n > 0 ? new Promise(res => setTimeout(res, 1200)).then(() => tenta(n - 1)) : Promise.reject(e));
+  tenta(1).then(() => {
+    campo('confermaTesto').textContent = 'Abbiamo ricevuto la tua richiesta (' + c.titolo.toLowerCase() + '). Ti scriviamo su WhatsApp per fissare giorno e ora' + (payload.fascia_oraria !== 'Indifferente' ? ', di ' + payload.fascia_oraria.toLowerCase() : '') + '.';
+    goTo('conferma');
+  }).catch(e => {
+    console.warn('Make: errore invio richiesta', e);
+    btn.disabled = false; btn.textContent = 'Invia la richiesta ›';
+    err('invio', 'Non siamo riusciti a inviare la richiesta. Riprova tra un attimo oppure scrivici su WhatsApp al 347 866 5252.');
+  });
 }
 </script>
 </body>
