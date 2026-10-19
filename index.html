@@ -434,22 +434,30 @@
   </div>
 </div>
 
+<!-- ═══ STEP 7b — CODICE CONVENZIONE (ver2.18) ═══ -->
+<div class="card" id="step_codice" style="display:none">
+  <div class="eyebrow">Cambio Fornitore</div>
+  <div class="display">Hai un codice convenzione?</div>
+  <p class="subtitle" style="margin-bottom:20px;">Se fai parte di una convenzione, inserisci il codice che ti hanno comunicato: nel confronto useremo le condizioni dedicate. Se non ce l'hai, continua pure: faremo il confronto con la nostra offerta standard.</p>
+  <div class="field">
+    <label for="cod_convenzione">Codice convenzione</label>
+    <div class="conv-row">
+      <input type="text" id="cod_convenzione" placeholder="Inserisci il codice" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" oninput="aggiornaPulsanteCodice()" onkeydown="if(event.key==='Enter'){event.preventDefault();applicaCodiceConvenzione();}"/>
+      <button type="button" class="btn-primary conv-btn" id="convBtn" onclick="applicaCodiceConvenzione()">Applica</button>
+    </div>
+    <div class="conv-msg" id="convMsg"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-back" onclick="goTo('proposta')">‹ Indietro</button>
+    <button class="btn-primary" id="convContinua" onclick="continuaDaCodice()">Non ho un codice, continua ›</button>
+  </div>
+</div>
+
 <!-- ═══ STEP 8a — BOLLETTA CF ═══ -->
 <div class="card" id="step_bolletta_cf" style="display:none">
   <div class="eyebrow">Cambio Fornitore</div>
   <div class="display">Recupera i dati dalla bolletta</div>
   <p class="subtitle" style="margin-bottom:16px;">Per valutare la fattibilità del nostro intervento abbiamo bisogno di alcuni dati. Li trovi sulla tua bolletta.</p>
-
-  <div class="conv-box" id="convBox">
-    <button type="button" class="conv-link" id="convLink" onclick="toggleCodiceConvenzione()">Hai un codice convenzione?</button>
-    <div class="conv-form" id="convForm" style="display:none">
-      <div class="conv-row">
-        <input type="text" id="cod_convenzione" placeholder="Inserisci il codice" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" onkeydown="if(event.key==='Enter'){event.preventDefault();applicaCodiceConvenzione();}"/>
-        <button type="button" class="btn-primary conv-btn" id="convBtn" onclick="applicaCodiceConvenzione()">Applica</button>
-      </div>
-      <div class="conv-msg" id="convMsg"></div>
-    </div>
-  </div>
 
   <div id="bollettaLuceSection" style="display:none">
     <div class="section-label" style="margin-top:0;">Bolletta Luce — pagina 2 (Scontrino energia)</div>
@@ -848,7 +856,7 @@ const STEP_PROGRESS = {
   utilizzo_luce: 3, utilizzo_gas: 3,
   agevolazioni: 3,
   servizio: 4, proposta: 4,
-  bolletta_cf: 4, risparmio_stimato: 4, canale: 4, conferma: 4
+  codice: 4, bolletta_cf: 4, risparmio_stimato: 4, canale: 4, conferma: 4
 };
 
 const STEP_LABELS = { 1:'Chi sei e cosa ti serve', 2:'Tipo di operazione', 3:'Utilizzo', 4:'La tua proposta' };
@@ -1216,14 +1224,38 @@ function goToDestinazione() {
     document.getElementById('bollettaLuceSection').style.display = luceCF ? 'block' : 'none';
     document.getElementById('bollettaGasSection').style.display  = gasCF  ? 'block' : 'none';
     datiMercatoRemotiPromise.then(popolaMesiCompetenza);
-    goTo('bolletta_cf');
+    aggiornaPulsanteCodice();
+    goTo('codice');
   } else {
     vaiAllaScelta();
   }
 }
+// Schermata codice: il pulsante principale cambia in base a cosa ha fatto il cliente.
+function aggiornaPulsanteCodice() {
+  const b = document.getElementById('convContinua');
+  if (!b) return;
+  const scritto = document.getElementById('cod_convenzione').value.trim();
+  if (esitoCodiceConv === 'valido') b.textContent = 'Continua ›';
+  else if (scritto && scritto !== codiceConvInserito) b.textContent = 'Applica il codice e continua ›';
+  else if (scritto) b.textContent = 'Continua senza codice ›';
+  else b.textContent = 'Non ho un codice, continua ›';
+}
+async function continuaDaCodice() {
+  const inp = document.getElementById('cod_convenzione');
+  const scritto = inp.value.trim();
+  // Codice scritto ma mai verificato (o cambiato dopo l'ultimo tentativo): lo si
+  // verifica adesso. Se è valido si prosegue; altrimenti si mostra l'esito e il
+  // cliente può correggere, o premere di nuovo per proseguire senza codice.
+  if (scritto && scritto !== codiceConvInserito) {
+    await applicaCodiceConvenzione();
+    aggiornaPulsanteCodice();
+    if (esitoCodiceConv !== 'valido') return;
+  }
+  goTo('bolletta_cf');
+}
 
 function backFromBolletta() {
-  goTo('proposta');
+  goTo('codice');
 }
 
 function validateBolletta() {
@@ -1482,7 +1514,7 @@ function getFissiCandidati(commodity, consumoAnnuo) {
 const SOGLIA_ENGAS_AZIENDA = { luce: 5000, gas: 5000 };
 
 // ── Codice convenzione (ver2.15, 19/10/2026) ──
-// Il cliente può inserire un codice (CONFCOMMERCIO, THE GROUP). Il controllo
+// Il cliente può inserire il codice della sua convenzione. Il controllo
 // lo fa lo Script di Google: il sito NON contiene né i codici né i prezzi di
 // convenzione, che arrivano solo se il codice è giusto. Col codice valido il
 // confronto usa l'offerta variabile di convenzione (tab "Sito_Convenzioni")
@@ -1494,12 +1526,6 @@ let convenzione = null;          // { nome, offerte } solo se codice valido
 let codiceConvInserito = '';     // ciò che il cliente ha scritto (va a Make)
 let esitoCodiceConv = '';        // 'valido' | 'non_applicabile' | 'non_valido' | 'non_verificato'
 
-function toggleCodiceConvenzione() {
-  const f = document.getElementById('convForm');
-  const aperto = f.style.display !== 'none';
-  f.style.display = aperto ? 'none' : 'block';
-  if (!aperto && !convenzione) document.getElementById('cod_convenzione').focus();
-}
 function mostraEsitoConv(tipo, testo) {
   const m = document.getElementById('convMsg');
   m.className = 'conv-msg ' + tipo;
@@ -1512,6 +1538,7 @@ function rimuoviCodiceConvenzione() {
   const b = document.getElementById('convBtn');
   b.textContent = 'Applica'; b.disabled = false; b.onclick = applicaCodiceConvenzione;
   mostraEsitoConv('', '');
+  aggiornaPulsanteCodice();
   inp.focus();
 }
 // Estrae dalla risposta dello Script le offerte variabili adatte al tipo di cliente.
@@ -1565,6 +1592,7 @@ async function applicaCodiceConvenzione() {
     }
   }
   btn.textContent = 'Applica'; btn.disabled = false; inp.disabled = false;
+  window.setTimeout(aggiornaPulsanteCodice, 0);
   if (esito === 'valido') {
     const x = estraiOfferteConvenzione(dati);
     if (x.luce || x.gas) {
