@@ -208,6 +208,18 @@
   .error-msg { display: none; color: #EF4444; font-size: .78rem; margin-top: 10px; text-align: center; }
 
   /* BOLLETTA GUIDA */
+  /* Codice convenzione (ver2.15) */
+  .conv-box { margin: 0 0 18px; }
+  .conv-link { background: none; border: 0; padding: 0; font: inherit; font-size: .85rem; font-weight: 600; color: var(--blu-soft); text-decoration: underline; cursor: pointer; }
+  .conv-form { margin-top: 10px; }
+  .conv-row { display: flex; gap: 8px; align-items: stretch; }
+  .conv-row input { flex: 1; min-width: 0; padding: 11px 14px; border: 1.5px solid var(--grey-200); border-radius: var(--radius-sm); font: inherit; font-size: .95rem; text-transform: uppercase; }
+  .conv-row input:focus { outline: none; border-color: var(--blu); }
+  .conv-row input:disabled { background: var(--grey-100); color: var(--grey-700); }
+  .conv-btn { flex: 0 0 auto; width: auto !important; padding: 11px 18px !important; font-size: .85rem !important; }
+  .conv-msg { font-size: .78rem; line-height: 1.5; margin-top: 8px; min-height: 18px; }
+  .conv-msg.ok { color: #166534; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 8px 12px; }
+  .conv-msg.ko { color: #92400E; background: var(--giallo-pale); border: 1px solid #FDE68A; border-radius: 8px; padding: 8px 12px; }
   .bolletta-guida {
     background: var(--giallo-pale); border: 1px solid #F0D898;
     border-radius: var(--radius-sm); padding: 12px 14px;
@@ -427,6 +439,17 @@
   <div class="eyebrow">Cambio Fornitore</div>
   <div class="display">Recupera i dati dalla bolletta</div>
   <p class="subtitle" style="margin-bottom:16px;">Per valutare la fattibilità del nostro intervento abbiamo bisogno di alcuni dati. Li trovi sulla tua bolletta.</p>
+
+  <div class="conv-box" id="convBox">
+    <button type="button" class="conv-link" id="convLink" onclick="toggleCodiceConvenzione()">Hai un codice convenzione?</button>
+    <div class="conv-form" id="convForm" style="display:none">
+      <div class="conv-row">
+        <input type="text" id="cod_convenzione" placeholder="Inserisci il codice" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" onkeydown="if(event.key==='Enter'){event.preventDefault();applicaCodiceConvenzione();}"/>
+        <button type="button" class="btn-primary conv-btn" id="convBtn" onclick="applicaCodiceConvenzione()">Applica</button>
+      </div>
+      <div class="conv-msg" id="convMsg"></div>
+    </div>
+  </div>
 
   <div id="bollettaLuceSection" style="display:none">
     <div class="section-label" style="margin-top:0;">Bolletta Luce — pagina 2 (Scontrino energia)</div>
@@ -1358,7 +1381,7 @@ function scaricaPrezziSito(tentativiRimasti) {
   return fetch(PREZZI_SITO_URL + '&t=' + Date.now())
     .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
     .then(d => {
-      if (d && d.offerte && applicaPrezziSito(d.offerte)) return true;
+      if (d && d.offerte && applicaPrezziSito(d.offerte)) { FISSI_SITO = leggiOfferteFisse(d.offerte); return true; }
       return Promise.reject(new Error('Scheda Sito vuota o incompleta' + (d && d.errore ? ': ' + d.errore : '')));
     })
     .catch(e => {
@@ -1371,11 +1394,201 @@ function scaricaPrezziSito(tentativiRimasti) {
 }
 const prezziSitoPromise = scaricaPrezziSito(2);
 
+// ── Offerte a PREZZO FISSO (ver2.16, 20/10/2026) ──
+// Dalla scheda "Sito" (e dalla scheda convenzioni) si leggono anche le righe
+// con fix_var = "fix". Il Configuratore confronta la bolletta con TUTTE le
+// offerte adatte (variabile di riferimento + fisse idonee) e mostra UNA sola
+// offerta: quella che nei prossimi 36 mesi costa meno al cliente. Un'offerta
+// fissa entra nel confronto solo se ha tutti i dati (prezzo, quota fissa,
+// durata, indice e spread dopo la scadenza), non è scaduta (valida_fino_al)
+// e il consumo è dentro i suoi limiti. Se la scheda non risponde non ci sono
+// offerte fisse: resta solo la variabile di riferimento, come prima.
+let FISSI_SITO = [];
+function dataValidita(o) {
+  let v = o && o.valida_fino_al ? String(o.valida_fino_al).trim() : '';
+  // Una cella-data di Google può arrivare come "2026-10-20T22:00:00.000Z"
+  // (mezzanotte italiana in UTC): si converte nel giorno locale.
+  if (/^\d{4}-\d{2}-\d{2}T/.test(v)) {
+    const d = new Date(v);
+    if (!isNaN(d)) v = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  v = v.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : '';
+}
+function oggiIso() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function offertaScaduta(o) { const v = dataValidita(o); return !!v && oggiIso() > v; }
+function fmtDataIt(iso) { const [y, m, g] = iso.split('-'); return g + '/' + m + '/' + y; }
+function giorniAllaScadenza(iso) {
+  const [y, m, g] = iso.split('-').map(Number);
+  const oggi = new Date(); oggi.setHours(0, 0, 0, 0);
+  return Math.round((new Date(y, m - 1, g) - oggi) / 86400000);
+}
+function testoValidita(o) {
+  const v = dataValidita(o);
+  if (!v) return '';
+  const gg = giorniAllaScadenza(v);
+  return 'Prezzo valido per sottoscrizioni entro il ' + fmtDataIt(v)
+    + (gg === 0 ? ' (ultimo giorno)' : gg > 0 && gg <= 7 ? ' (mancano ' + gg + ' giorni)' : '');
+}
+function leggiOfferteFisse(offerte) {
+  const out = [];
+  Object.keys(offerte || {}).forEach(forn => Object.keys(offerte[forn] || {}).forEach(seg => Object.keys(offerte[forn][seg] || {}).forEach(com => Object.keys(offerte[forn][seg][com] || {}).forEach(tipo => {
+    const o = offerte[forn][seg][com][tipo];
+    if (!o) return;
+    const fv = String(o.fix_var || '').trim().toLowerCase();
+    if (!(fv === 'fix' || (fv === '' && o.prezzo_fisso > 0))) return;
+    const ok = typeof o.nome === 'string' && o.nome.trim()
+      && Number.isFinite(o.prezzo_fisso) && o.prezzo_fisso > 0
+      && Number.isFinite(o.pcv_anno) && o.pcv_anno > 0
+      && Number.isFinite(o.durata_mesi) && o.durata_mesi > 0
+      && typeof o.indice_dopo_scadenza === 'string' && o.indice_dopo_scadenza.trim()
+      && Number.isFinite(o.spread_dopo_scadenza);
+    if (!ok) return;
+    const vin = String(o.vincolo_cliente || '').trim().toLowerCase();
+    out.push({
+      tipoOfferta: 'fix', fornitore: forn, segmento: seg, commodity: com, tipo,
+      nome: o.nome.trim(), prezzo_fisso: o.prezzo_fisso, pcv_anno: o.pcv_anno, durata_mesi: o.durata_mesi,
+      indice_dopo: o.indice_dopo_scadenza.trim(), spread_dopo: o.spread_dopo_scadenza,
+      unita: com === 'luce' ? '€/kWh' : '€/Smc',
+      adeguamento: (Number.isFinite(o.adeguamento_soglia_kwh) && Number.isFinite(o.adeguamento_extra_kwh))
+        ? { soglia_annua: o.adeguamento_soglia_kwh, extra: o.adeguamento_extra_kwh } : null,
+      vincolo: ['si', 'sì', 's', 'x', 'true', '1', 'yes', 'vincolo'].includes(vin),
+      valida_fino_al: dataValidita(o),
+      consumo_min: Number.isFinite(o.consumo_min) ? o.consumo_min : null,
+      consumo_max: Number.isFinite(o.consumo_max) ? o.consumo_max : null,
+      convenzione: o.convenzione || ''
+    });
+  }))));
+  return out;
+}
+// Fisse idonee per commodity e consumo. Con una convenzione che si applica
+// a quella commodity valgono solo le fisse della convenzione (se ce ne sono);
+// altrimenti quelle standard del sito.
+function getFissiCandidati(commodity, consumoAnnuo) {
+  const seg = state.tipo_cliente === 'Azienda' ? 'azienda' : 'privato';
+  const inConv = !!getOffertaConvenzione(commodity, consumoAnnuo);
+  const lista = inConv ? ((convenzione && convenzione.fissi) || []) : FISSI_SITO;
+  return lista.filter(o => o.commodity === commodity && o.segmento === seg
+    && !offertaScaduta(o)
+    && (o.consumo_min === null || consumoAnnuo >= o.consumo_min)
+    && (o.consumo_max === null || consumoAnnuo <= o.consumo_max));
+}
+
 // Sotto questa soglia l'Azienda è confrontata con ENGAS, da qui in su con AXPO
 // (Luce: < 5.000 kWh ENGAS; Gas: <= 5.000 Smc ENGAS, AXPO Scegli parte da 5.001).
 const SOGLIA_ENGAS_AZIENDA = { luce: 5000, gas: 5000 };
 
+// ── Codice convenzione (ver2.15, 19/10/2026) ──
+// Il cliente può inserire un codice (CONFCOMMERCIO, THE GROUP). Il controllo
+// lo fa lo Script di Google: il sito NON contiene né i codici né i prezzi di
+// convenzione, che arrivano solo se il codice è giusto. Col codice valido il
+// confronto usa l'offerta variabile di convenzione (tab "Sito_Convenzioni")
+// per i consumi in cui vale; negli altri casi resta l'offerta standard.
+// Codice sbagliato, vuoto o non verificabile: il percorso continua sempre
+// con l'offerta standard, senza bloccare il cliente.
+const CONV_URL_BASE = 'https://script.google.com/macros/s/AKfycbyohWKqwcKXRsYCmvhQ-feYTmg1QHGP9xYLjUNxmmLG2VGQ6J1e4TqX4VO_Q4lzum6t/exec?tool=sito_conv&chiave=convsito-q4x9d-h2w7m-t6vnb-k8r3z';
+let convenzione = null;          // { nome, offerte } solo se codice valido
+let codiceConvInserito = '';     // ciò che il cliente ha scritto (va a Make)
+let esitoCodiceConv = '';        // 'valido' | 'non_applicabile' | 'non_valido' | 'non_verificato'
+
+function toggleCodiceConvenzione() {
+  const f = document.getElementById('convForm');
+  const aperto = f.style.display !== 'none';
+  f.style.display = aperto ? 'none' : 'block';
+  if (!aperto && !convenzione) document.getElementById('cod_convenzione').focus();
+}
+function mostraEsitoConv(tipo, testo) {
+  const m = document.getElementById('convMsg');
+  m.className = 'conv-msg ' + tipo;
+  m.textContent = testo;
+}
+function rimuoviCodiceConvenzione() {
+  convenzione = null; codiceConvInserito = ''; esitoCodiceConv = '';
+  const inp = document.getElementById('cod_convenzione');
+  inp.disabled = false; inp.value = '';
+  const b = document.getElementById('convBtn');
+  b.textContent = 'Applica'; b.disabled = false; b.onclick = applicaCodiceConvenzione;
+  mostraEsitoConv('', '');
+  inp.focus();
+}
+// Estrae dalla risposta dello Script le offerte variabili adatte al tipo di cliente.
+function estraiOfferteConvenzione(offerte) {
+  const seg = state.tipo_cliente === 'Azienda' ? 'azienda' : 'privato';
+  const out = { luce: null, gas: null, nome: '', fissi: leggiOfferteFisse(offerte).filter(o => o.segmento === seg) };
+  out.fissi.forEach(o => { if (!out.nome && o.convenzione) out.nome = o.convenzione; });
+  Object.keys(offerte || {}).forEach(forn => {
+    ['luce', 'gas'].forEach(com => {
+      const o = offerte[forn] && offerte[forn][seg] && offerte[forn][seg][com] && offerte[forn][seg][com].variabile;
+      const ok = o && typeof o.nome === 'string' && o.nome.trim() && typeof o.indice === 'string'
+        && Number.isFinite(o.spread) && Number.isFinite(o.pcv_anno) && o.pcv_anno > 0;
+      if (!ok) return;
+      out[com] = {
+        fornitore: forn, nome: o.nome.trim(), indice: o.indice, spread: o.spread, pcv_anno: o.pcv_anno,
+        unita: com === 'luce' ? '€/kWh' : '€/Smc', convenzione: o.convenzione || '',
+        consumo_min: Number.isFinite(o.consumo_min) ? o.consumo_min : null,
+        consumo_max: Number.isFinite(o.consumo_max) ? o.consumo_max : null
+      };
+      if (!out.nome && o.convenzione) out.nome = o.convenzione;
+    });
+  });
+  return out;
+}
+function getOffertaConvenzione(commodity, consumoAnnuo) {
+  if (!convenzione) return null;
+  const o = convenzione.offerte[commodity];
+  if (!o) return null;
+  if (o.consumo_min !== null && consumoAnnuo < o.consumo_min) return null;
+  if (o.consumo_max !== null && consumoAnnuo > o.consumo_max) return null;
+  return o;
+}
+async function applicaCodiceConvenzione() {
+  const inp = document.getElementById('cod_convenzione');
+  const btn = document.getElementById('convBtn');
+  const codice = inp.value.trim();
+  if (!codice) { mostraEsitoConv('ko', 'Inserisci il codice.'); return; }
+  inp.disabled = true; btn.disabled = true; btn.textContent = 'Verifico…';
+  mostraEsitoConv('', '');
+  codiceConvInserito = codice;
+  let esito = 'non_verificato', dati = null;
+  for (let t = 0; t < 2; t++) {
+    try {
+      const r = await fetch(CONV_URL_BASE + '&codice=' + encodeURIComponent(codice) + '&t=' + Date.now());
+      const d = await r.json();
+      if (d && d.offerte) { esito = 'valido'; dati = d.offerte; break; }
+      if (d && d.errore === 'Codice non valido') { esito = 'non_valido'; break; }
+      throw new Error('risposta inattesa');
+    } catch (e) {
+      if (t === 0) await new Promise(res => setTimeout(res, 800));
+    }
+  }
+  btn.textContent = 'Applica'; btn.disabled = false; inp.disabled = false;
+  if (esito === 'valido') {
+    const x = estraiOfferteConvenzione(dati);
+    if (x.luce || x.gas) {
+      convenzione = { nome: x.nome || codice.toUpperCase(), offerte: { luce: x.luce, gas: x.gas }, fissi: x.fissi };
+      esitoCodiceConv = 'valido';
+      inp.disabled = true;
+      btn.textContent = 'Rimuovi'; btn.onclick = rimuoviCodiceConvenzione;
+      mostraEsitoConv('ok', 'Convenzione ' + convenzione.nome + ' riconosciuta. Nel confronto useremo le condizioni dedicate, dove valgono per i tuoi consumi.');
+    } else {
+      convenzione = null; esitoCodiceConv = 'non_applicabile';
+      mostraEsitoConv('ko', 'Il codice è valido ma non è utilizzabile per questo tipo di cliente: proseguiamo con l\'offerta standard.');
+    }
+  } else if (esito === 'non_valido') {
+    convenzione = null; esitoCodiceConv = 'non_valido';
+    mostraEsitoConv('ko', 'Codice non valido: proseguiamo con l\'offerta standard. Puoi riprovare o continuare senza.');
+  } else {
+    convenzione = null; esitoCodiceConv = 'non_verificato';
+    mostraEsitoConv('ko', 'Non riusciamo a verificare il codice in questo momento: proseguiamo con l\'offerta standard. Lo verificheremo noi con te nella consulenza.');
+  }
+}
+
 function getOffertaRiferimento(commodity, consumoAnnuo) {
+  const conv = getOffertaConvenzione(commodity, consumoAnnuo);
+  if (conv) return conv;
   if (state.tipo_cliente !== 'Azienda') return OFFERTE_SITO.Privato[commodity];
   const blocco = OFFERTE_SITO.Azienda[commodity];
   const sotto = commodity === 'luce' ? consumoAnnuo < SOGLIA_ENGAS_AZIENDA.luce : consumoAnnuo <= SOGLIA_ENGAS_AZIENDA.gas;
@@ -1425,14 +1638,26 @@ function getMeseInizioFornitura() {
   const oggi = new Date();
   return new Date(oggi.getFullYear(), oggi.getMonth() + 2, 1);
 }
-function calcolaProiezioneSito(commodity) {
+// Proiezione mese per mese di UNA offerta (variabile o fissa). Per la fissa:
+// prezzo piatto per durata_mesi, poi indice_dopo_scadenza + spread_dopo_scadenza
+// (stessa logica del Qualifica); l'eventuale adeguamento per consumi bassi si
+// somma al prezzo fisso e allo spread dopo la scadenza.
+function calcolaProiezioneOfferta(commodity, offertaBase) {
   const quotaFissaCliente = parseFloat(state[commodity + '_quota_fissa']);
   const prezzoCliente     = parseFloat(state[commodity + '_prezzo_vendita']);
   const consumoAnnuo      = parseFloat(state[commodity + '_consumo_annuo']);
   if (isNaN(quotaFissaCliente) || isNaN(prezzoCliente) || isNaN(consumoAnnuo) || !datiMercatoRemoti) return null;
 
-  const offerta = getOffertaRiferimento(commodity, consumoAnnuo);
-  const spread = getSpreadEffettivo(offerta, consumoAnnuo);
+  const isFissa = offertaBase.tipoOfferta === 'fix';
+  let offerta = offertaBase, spread = null;
+  if (isFissa) {
+    const a = offertaBase.adeguamento;
+    if (a && consumoAnnuo < a.soglia_annua) {
+      offerta = { ...offertaBase, prezzo_fisso: offertaBase.prezzo_fisso + a.extra, spread_dopo: offertaBase.spread_dopo + a.extra, extraApplicato: a.extra };
+    }
+  } else {
+    spread = getSpreadEffettivo(offertaBase, consumoAnnuo);
+  }
   const isLuce = commodity === 'luce';
   const moltPerdite = isLuce ? FATTORE_PERDITE_RETE_LUCE : 1;
   const indiceRif = isLuce ? 'PUN' : 'PSV';
@@ -1451,12 +1676,20 @@ function calcolaProiezioneSito(commodity) {
   for (let i = 0; i < 36; i++) {
     const row = (datiMercatoRemoti.serie_storica || []).find(r => mesePosizione(r.mese) === posInizio + i);
     if (!row) continue;
-    const valIndice = getValoreIndicePerMese(offerta.indice, row.mese);
-    if (valIndice <= 0) continue;
+    let energia;
+    if (isFissa && i < offerta.durata_mesi) {
+      energia = offerta.prezzo_fisso * moltPerdite;
+    } else {
+      const indiceOff = isFissa ? offerta.indice_dopo : offerta.indice;
+      const spreadOff = isFissa ? offerta.spread_dopo : spread;
+      const valIndice = getValoreIndicePerMese(indiceOff, row.mese);
+      if (valIndice <= 0) continue;
+      energia = (valIndice + spreadOff) * moltPerdite;
+    }
     const areraMese = !isLuce ? 0 : (state.tipo_cliente === 'Azienda'
       ? getAreraPerMesi('dispacciamento', [row.mese]) + getAreraPerMesi('capacity_mkt', [row.mese])
       : getAreraPerMesi('cdispd', [row.mese]));
-    const nostro = (valIndice + spread) * moltPerdite + areraMese;
+    const nostro = energia + areraMese;
     let attuale;
     if (state[commodity + '_tipo_prezzo'] === 'Fisso') attuale = prezzoCliente;
     else {
@@ -1468,7 +1701,23 @@ function calcolaProiezioneSito(commodity) {
     const costoNostro  = nostro * consumoMensile + offerta.pcv_anno / 12;
     mesi.push({ mese: row.mese, differenza: costoAttuale - costoNostro });
   }
-  return { offerta, spread, consumoAnnuo, mesi };
+  return { offerta, spread, consumoAnnuo, mesi, isFissa };
+}
+// L'offerta da mostrare: tra la variabile di riferimento e le fisse idonee,
+// quella con il risparmio maggiore (o la spesa minore) nei prossimi 36 mesi.
+// A parità vince la variabile (nessun vincolo di durata sul prezzo).
+function calcolaProiezioneSito(commodity) {
+  const consumoAnnuo = parseFloat(state[commodity + '_consumo_annuo']);
+  if (isNaN(consumoAnnuo)) return null;
+  const candidate = [getOffertaRiferimento(commodity, consumoAnnuo)].concat(getFissiCandidati(commodity, consumoAnnuo));
+  let migliore = null;
+  candidate.forEach(o => {
+    const pr = calcolaProiezioneOfferta(commodity, o);
+    if (!pr || pr.mesi.length === 0) return;
+    pr.tot36 = pr.mesi.reduce((a, m) => a + m.differenza, 0);
+    if (!migliore || pr.tot36 > migliore.tot36 + 0.005) migliore = pr;
+  });
+  return migliore;
 }
 function calcolaRisparmioSito(commodity, nMesi) {
   const pr = calcolaProiezioneSito(commodity);
@@ -1483,7 +1732,13 @@ function mostraRisparmioStimato() {
   // Per i prezzi della scheda Sito si aspetta al massimo 4 secondi: oltre,
   // si va avanti con i valori scritti nel file (mai schermata bloccata).
   const attesaPrezzi = Promise.race([prezziSitoPromise, new Promise(r => setTimeout(r, 4000))]);
-  Promise.all([datiMercatoRemotiPromise, attesaPrezzi]).then(mostraRisparmioStimatoInterno);
+  // Codice scritto ma non ancora applicato (o modificato dopo l'ultimo
+  // tentativo): lo si verifica adesso, così non si perde chi preme "Avanti"
+  // senza aver premuto "Applica".
+  const inpConv = document.getElementById('cod_convenzione');
+  const daVerificare = inpConv && inpConv.value.trim() && inpConv.value.trim() !== codiceConvInserito;
+  const attesaCodice = daVerificare ? applicaCodiceConvenzione() : Promise.resolve();
+  Promise.all([datiMercatoRemotiPromise, attesaPrezzi, attesaCodice]).then(mostraRisparmioStimatoInterno);
 }
 
 function mostraRisparmioStimatoInterno() {
@@ -1513,12 +1768,25 @@ function mostraRisparmioStimatoInterno() {
     if (!pr || v12 === null) return '';
     const o = pr.offerta;
     const um = commodity === 'luce' ? 'kWh' : 'Smc';
-    const extra = (o.adeguamento && pr.consumoAnnuo < o.adeguamento.soglia_annua)
+    const extra = (!pr.isFissa && o.adeguamento && pr.consumoAnnuo < o.adeguamento.soglia_annua)
       ? ` (${fmt3(o.spread)} + ${fmt3(o.adeguamento.extra)} per consumi sotto ${o.adeguamento.soglia_annua.toLocaleString('it-IT')} ${um}/anno)` : '';
+    const extraFisso = (pr.isFissa && o.extraApplicato)
+      ? ` (incluso +${fmt3(o.extraApplicato)} per consumi sotto ${o.adeguamento.soglia_annua.toLocaleString('it-IT')} ${um}/anno)` : '';
+    const dettaglioPrezzo = pr.isFissa
+      ? `Prezzo fisso: ${fmt3(o.prezzo_fisso)} ${o.unita}${extraFisso} per ${o.durata_mesi} mesi, poi ${o.indice_dopo} + ${fmt3(o.spread_dopo)} ${o.unita}`
+      : `Offerta indicizzata: ${o.indice} + ${fmt3(pr.spread)} ${o.unita}${extra}`;
+    const validitaHtml = (pr.isFissa && dataValidita(o))
+      ? `<div class="risultato-dettaglio" style="${giorniAllaScadenza(dataValidita(o)) <= 7 ? 'color:#B45309;font-weight:600;' : ''}">${testoValidita(o)}</div>` : '';
+    const vincoloHtml = (pr.isFissa && o.vincolo)
+      ? `<div class="risultato-dettaglio" style="color:#92400E;font-weight:600;">In caso di uscita anticipata dal contratto è previsto il pagamento dell'Onere di recesso anticipato.</div>` : '';
     return `<div class="risultato-card">
       <div class="risultato-titolo">${icona} ${etichetta}</div>
       <div class="risultato-offerta">${o.fornitore} — ${o.nome}</div>
-      <div class="risultato-dettaglio">Offerta indicizzata: ${o.indice} + ${fmt3(pr.spread)} ${o.unita}${extra} · quota fissa ${o.pcv_anno.toFixed(0)} €/anno (${(o.pcv_anno/12).toFixed(2).replace('.', ',')} €/mese)</div>
+      ${o.convenzione ? `<div class="risultato-dettaglio" style="color:#166534;font-weight:600;">Convenzione ${o.convenzione} applicata</div>` : ''}
+      ${(convenzione && !o.convenzione) ? `<div class="risultato-dettaglio">Convenzione ${convenzione.nome}: condizioni non applicabili ai consumi indicati, confronto con l'offerta standard.</div>` : ''}
+      ${validitaHtml}
+      ${vincoloHtml}
+      <div class="risultato-dettaglio">${dettaglioPrezzo} · quota fissa ${o.pcv_anno.toFixed(0)} €/anno (${(o.pcv_anno/12).toFixed(2).replace('.', ',')} €/mese)</div>
       ${riga('Prossimi 12 mesi', v12)}
       ${v36 !== null ? riga('Prossimi 36 mesi', v36) : ''}
     </div>`;
@@ -1547,6 +1815,23 @@ function mostraRisparmioStimatoInterno() {
     ' e nell\'ipotesi di invarianza delle condizioni di partenza (consumi dichiarati, categoria contrattuale, componenti regolate). Eventuali variazioni successive dei mercati energetici o dei dati di partenza possono determinare differenze rispetto ai valori riportati. Si riferiscono al solo costo della spesa per la materia energia elettrica e/o gas naturale, al netto di oneri di sistema, imposte e IVA. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.';
 
   goTo('risparmio_stimato');
+}
+
+// Descrizione dell'offerta mostrata al cliente (la migliore a 36 mesi), per
+// la mail di Make: nome, tipo, scadenza del prezzo e vincolo.
+function descriviOffertaConfronto(commodity) {
+  const cons = parseFloat(state[commodity + '_consumo_annuo']);
+  const pr = Number.isFinite(cons) ? calcolaProiezioneSito(commodity) : null;
+  const o = pr ? pr.offerta : (Number.isFinite(cons) ? getOffertaRiferimento(commodity, cons) : null);
+  if (!o) return { nome: '—', tipo: '—', scadenza: '—', vincolo: '—' };
+  const fissa = !!(pr && pr.isFissa);
+  const v = fissa ? dataValidita(o) : '';
+  return {
+    nome: o.fornitore + ' — ' + o.nome,
+    tipo: fissa ? 'Prezzo fisso ' + o.durata_mesi + ' mesi' : 'Variabile',
+    scadenza: v ? fmtDataIt(v) : '—',
+    vincolo: fissa ? (o.vincolo ? 'Sì' : 'No') : '—'
+  };
 }
 
 function costruisciPayloadBase() {
@@ -1578,8 +1863,25 @@ function costruisciPayloadBase() {
     servizio_q5: state.servizio_q5 === 'si' ? 'Sì' : 'No',
     luce_tipo_prezzo: state.luce_tipo_prezzo || '—',
     gas_tipo_prezzo: state.gas_tipo_prezzo || '—',
-    offerta_confronto_luce: (state.luce_consumo_annuo && !offertaPersonalizzata) ? (getOffertaRiferimento('luce', parseFloat(state.luce_consumo_annuo)).fornitore + ' — ' + getOffertaRiferimento('luce', parseFloat(state.luce_consumo_annuo)).nome) : '—',
-    offerta_confronto_gas: (state.gas_consumo_annuo && !offertaPersonalizzata) ? (getOffertaRiferimento('gas', parseFloat(state.gas_consumo_annuo)).fornitore + ' — ' + getOffertaRiferimento('gas', parseFloat(state.gas_consumo_annuo)).nome) : '—',
+    offerta_confronto_luce: (state.luce_consumo_annuo && !offertaPersonalizzata) ? descriviOffertaConfronto('luce').nome : '—',
+    offerta_confronto_gas: (state.gas_consumo_annuo && !offertaPersonalizzata) ? descriviOffertaConfronto('gas').nome : '—',
+    tipo_offerta_luce: (state.luce_consumo_annuo && !offertaPersonalizzata) ? descriviOffertaConfronto('luce').tipo : '—',
+    tipo_offerta_gas: (state.gas_consumo_annuo && !offertaPersonalizzata) ? descriviOffertaConfronto('gas').tipo : '—',
+    scadenza_offerta_luce: (state.luce_consumo_annuo && !offertaPersonalizzata) ? descriviOffertaConfronto('luce').scadenza : '—',
+    scadenza_offerta_gas: (state.gas_consumo_annuo && !offertaPersonalizzata) ? descriviOffertaConfronto('gas').scadenza : '—',
+    vincolo_offerta_luce: (state.luce_consumo_annuo && !offertaPersonalizzata) ? descriviOffertaConfronto('luce').vincolo : '—',
+    vincolo_offerta_gas: (state.gas_consumo_annuo && !offertaPersonalizzata) ? descriviOffertaConfronto('gas').vincolo : '—',
+    convenzione: convenzione ? convenzione.nome : '—',
+    codice_convenzione: codiceConvInserito ? (codiceConvInserito + ' (' + ({ valido: 'valido', non_applicabile: 'valido ma non applicabile al tipo di cliente', non_valido: 'non valido', non_verificato: 'non verificato' }[esitoCodiceConv] || 'non verificato') + ')') : '—',
+    convenzione_applicata_a: (() => {
+      if (!convenzione) return '—';
+      const a = [];
+      ['luce', 'gas'].forEach(c => {
+        const cons = parseFloat(state[c + '_consumo_annuo']);
+        if (!offertaPersonalizzata && Number.isFinite(cons) && getOffertaConvenzione(c, cons)) a.push(c === 'luce' ? 'Luce' : 'Gas');
+      });
+      return a.length ? a.join(' + ') : 'Nessuna (consumi fuori dai limiti)';
+    })(),
     offerta_personalizzata: offertaPersonalizzata ? 'Sì' : 'No',
     consumo_combinato_kwh: consumoCombinatoKwh || '—'
   };
