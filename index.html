@@ -1834,8 +1834,31 @@ function descriviOffertaConfronto(commodity) {
   };
 }
 
+// Risparmio che il cliente ha visto in schermata, in forma leggibile per la
+// mail di Make (ver2.17): "Risparmio 130,59 €" / "Spesa in più 1.243,40 €".
+// Stessa funzione dei numeri mostrati, quindi mail e schermata coincidono.
+function testoRisparmio(v) {
+  if (v === null || v === undefined || !Number.isFinite(v)) return '—';
+  const eur = Math.abs(v).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  return (v > 0 ? 'Risparmio ' : 'Spesa in più ') + eur;
+}
+function risparmiPerPayload() {
+  const calc = (c, n) => (!offertaPersonalizzata && Number.isFinite(parseFloat(state[c + '_consumo_annuo'])))
+    ? calcolaRisparmioSito(c, n) : null;
+  const l12 = calc('luce', 12), l36 = calc('luce', 36), g12 = calc('gas', 12), g36 = calc('gas', 36);
+  const somma = (a, b) => (a !== null && b !== null) ? a + b : null;
+  const haDati = [l12, g12].some(v => v !== null && v !== undefined);
+  return {
+    risparmio_luce_12: testoRisparmio(l12), risparmio_luce_36: testoRisparmio(l36),
+    risparmio_gas_12: testoRisparmio(g12), risparmio_gas_36: testoRisparmio(g36),
+    risparmio_totale_12: testoRisparmio(somma(l12, g12)), risparmio_totale_36: testoRisparmio(somma(l36, g36)),
+    mese_inizio_fornitura: haDati ? getMeseInizioFornitura().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }) : '—'
+  };
+}
+
 function costruisciPayloadBase() {
   return {
+    ...risparmiPerPayload(),
     email: state.email || '—',
     privacy_accettata: state.privacy_accettata ? 'Sì' : 'No',
     privacy_accettata_il: state.privacy_accettata_il || '—',
