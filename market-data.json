@@ -234,7 +234,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 86.46,
+      "ttf": 88.88,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492
@@ -246,7 +246,7 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 86.3,
+      "ttf": 88.895,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492
@@ -258,10 +258,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 86.095,
+      "ttf": 102.154,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 88.83,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Feb 2027",
@@ -270,10 +272,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 85.575,
+      "ttf": 101.62,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 88.365,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Mar 2027",
@@ -282,10 +286,12 @@
       "psbil": 0,
       "psv_mwh": 0,
       "psbil_mwh": 0,
-      "ttf": 83.175,
+      "ttf": 99.251,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.013492,
+      "ttf_reale": 86.305,
+      "premio_rischio_pct": 15.0
     },
     {
       "mese": "Apr 2027",
@@ -294,11 +300,11 @@
       "psbil": 0.8786501318509014,
       "psv_mwh": 82.07,
       "psbil_mwh": 82.19,
-      "ttf": 81.121,
+      "ttf": 86.595,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 70.54,
+      "ttf_reale": 75.3,
       "premio_rischio_pct": 15.0
     },
     {
@@ -308,11 +314,11 @@
       "psbil": 0.8100484641151734,
       "psv_mwh": 75.65,
       "psbil_mwh": 75.77,
-      "ttf": 74.704,
+      "ttf": 81.19,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 64.96,
+      "ttf_reale": 70.6,
       "premio_rischio_pct": 15.0
     },
     {
@@ -322,11 +328,11 @@
       "psbil": 0.7840488917397191,
       "psv_mwh": 73.22,
       "psbil_mwh": 73.34,
-      "ttf": 72.272,
+      "ttf": 78.648,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 62.845,
+      "ttf_reale": 68.39,
       "premio_rischio_pct": 15.0
     },
     {
@@ -336,11 +342,11 @@
       "psbil": 0.796564036775711,
       "psv_mwh": 74.39,
       "psbil_mwh": 74.51,
-      "ttf": 71.162,
+      "ttf": 77.366,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 61.88,
+      "ttf_reale": 67.275,
       "premio_rischio_pct": 15.0
     },
     {
@@ -350,11 +356,11 @@
       "psbil": 0.780891597177678,
       "psv_mwh": 72.93,
       "psbil_mwh": 73.04,
-      "ttf": 69.696,
+      "ttf": 74.934,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 60.605,
+      "ttf_reale": 65.16,
       "premio_rischio_pct": 15.0
     },
     {
@@ -364,11 +370,11 @@
       "psbil": 0.7832862946333119,
       "psv_mwh": 73.15,
       "psbil_mwh": 73.27,
-      "ttf": 69.92,
+      "ttf": 73.898,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 60.8,
+      "ttf_reale": 64.259,
       "premio_rischio_pct": 15.0
     },
     {
@@ -378,11 +384,11 @@
       "psbil": 0.7582381868719263,
       "psv_mwh": 70.81,
       "psbil_mwh": 70.93,
-      "ttf": 68.885,
+      "ttf": 72.923,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 59.9,
+      "ttf_reale": 63.411,
       "premio_rischio_pct": 15.0
     },
     {
@@ -392,11 +398,11 @@
       "psbil": 0.755779345734445,
       "psv_mwh": 70.58,
       "psbil_mwh": 70.7,
-      "ttf": 68.655,
+      "ttf": 72.48,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 59.7,
+      "ttf_reale": 63.026,
       "premio_rischio_pct": 15.0
     },
     {
@@ -406,11 +412,11 @@
       "psbil": 0.7361834509300833,
       "psv_mwh": 68.75,
       "psbil_mwh": 68.86,
-      "ttf": 66.822,
+      "ttf": 72.881,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 58.106,
+      "ttf_reale": 63.375,
       "premio_rischio_pct": 15.0
     },
     {
@@ -420,12 +426,12 @@
       "psbil": 0.7190463972632027,
       "psv_mwh": 67.14,
       "psbil_mwh": 67.26,
-      "ttf": 66.094,
+      "ttf": 71.429,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 58.75,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 62.188,
+      "premio_rischio_pct": 14.86
     },
     {
       "mese": "Feb 2028",
@@ -434,12 +440,12 @@
       "psbil": 0.70136412230062,
       "psv_mwh": 65.49,
       "psbil_mwh": 65.61,
-      "ttf": 64.44,
+      "ttf": 70.201,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 57.28,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 61.193,
+      "premio_rischio_pct": 14.72
     },
     {
       "mese": "Mar 2028",
@@ -448,12 +454,12 @@
       "psbil": 0.6565063074620482,
       "psv_mwh": 61.29,
       "psbil_mwh": 61.41,
-      "ttf": 60.244,
+      "ttf": 65.803,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 53.55,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 57.43,
+      "premio_rischio_pct": 14.58
     },
     {
       "mese": "Apr 2028",
@@ -462,12 +468,12 @@
       "psbil": 0.5156717268904567,
       "psv_mwh": 48.12,
       "psbil_mwh": 48.24,
-      "ttf": 47.168,
+      "ttf": 50.91,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 41.927,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 44.486,
+      "premio_rischio_pct": 14.44
     },
     {
       "mese": "Mag 2028",
@@ -476,12 +482,12 @@
       "psbil": 0.46603520775425833,
       "psv_mwh": 43.48,
       "psbil_mwh": 43.59,
-      "ttf": 42.525,
+      "ttf": 46.137,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 37.8,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 40.361,
+      "premio_rischio_pct": 14.31
     },
     {
       "mese": "Giu 2028",
@@ -490,12 +496,12 @@
       "psbil": 0.45369823961228706,
       "psv_mwh": 42.32,
       "psbil_mwh": 42.44,
-      "ttf": 41.371,
+      "ttf": 44.761,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 36.774,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 39.206,
+      "premio_rischio_pct": 14.17
     },
     {
       "mese": "Lug 2028",
@@ -504,12 +510,12 @@
       "psbil": 0.4742420354928373,
       "psv_mwh": 44.24,
       "psbil_mwh": 44.36,
-      "ttf": 41.012,
+      "ttf": 44.085,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 36.455,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 38.661,
+      "premio_rischio_pct": 14.03
     },
     {
       "mese": "Ago 2028",
@@ -518,12 +524,12 @@
       "psbil": 0.4731943553559974,
       "psv_mwh": 44.15,
       "psbil_mwh": 44.26,
-      "ttf": 40.914,
+      "ttf": 44.025,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 36.368,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 38.656,
+      "premio_rischio_pct": 13.89
     },
     {
       "mese": "Set 2028",
@@ -532,12 +538,12 @@
       "psbil": 0.472649134060295,
       "psv_mwh": 44.09,
       "psbil_mwh": 44.21,
-      "ttf": 40.863,
+      "ttf": 43.926,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 36.323,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 38.616,
+      "premio_rischio_pct": 13.75
     },
     {
       "mese": "Ott 2028",
@@ -546,12 +552,12 @@
       "psbil": 0.460857387214026,
       "psv_mwh": 42.99,
       "psbil_mwh": 43.11,
-      "ttf": 41.068,
+      "ttf": 43.957,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 36.505,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 38.691,
+      "premio_rischio_pct": 13.61
     },
     {
       "mese": "Nov 2028",
@@ -560,12 +566,12 @@
       "psbil": 0.46681205901218725,
       "psv_mwh": 43.55,
       "psbil_mwh": 43.67,
-      "ttf": 41.625,
+      "ttf": 44.464,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 37.0,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 39.186,
+      "premio_rischio_pct": 13.47
     },
     {
       "mese": "Dic 2028",
@@ -574,12 +580,12 @@
       "psbil": 0.4758349369253795,
       "psv_mwh": 44.39,
       "psbil_mwh": 44.51,
-      "ttf": 42.469,
+      "ttf": 44.846,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 37.75,
-      "premio_rischio_pct": 12.5
+      "ttf_reale": 39.571,
+      "premio_rischio_pct": 13.33
     },
     {
       "mese": "Gen 2029",
@@ -588,12 +594,12 @@
       "psbil": 0.46288860380585845,
       "psv_mwh": 43.18,
       "psbil_mwh": 43.3,
-      "ttf": 42.133,
+      "ttf": 45.445,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 37.958,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 40.149,
+      "premio_rischio_pct": 13.19
     },
     {
       "mese": "Feb 2029",
@@ -602,12 +608,12 @@
       "psbil": 0.4604083814410947,
       "psv_mwh": 42.95,
       "psbil_mwh": 43.07,
-      "ttf": 41.901,
+      "ttf": 45.172,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 37.749,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 39.954,
+      "premio_rischio_pct": 13.06
     },
     {
       "mese": "Mar 2029",
@@ -616,12 +622,12 @@
       "psbil": 0.4443938422065426,
       "psv_mwh": 41.45,
       "psbil_mwh": 41.57,
-      "ttf": 40.403,
+      "ttf": 43.558,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 36.399,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 38.574,
+      "premio_rischio_pct": 12.92
     },
     {
       "mese": "Apr 2029",
@@ -630,12 +636,12 @@
       "psbil": 0.38399543867151303,
       "psv_mwh": 35.8,
       "psbil_mwh": 35.92,
-      "ttf": 34.851,
+      "ttf": 36.326,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 31.397,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 32.21,
+      "premio_rischio_pct": 12.78
     },
     {
       "mese": "Mag 2029",
@@ -644,12 +650,12 @@
       "psbil": 0.36999073480151085,
       "psv_mwh": 34.49,
       "psbil_mwh": 34.61,
-      "ttf": 33.541,
+      "ttf": 34.8,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 30.217,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 30.895,
+      "premio_rischio_pct": 12.64
     },
     {
       "mese": "Giu 2029",
@@ -658,12 +664,12 @@
       "psbil": 0.36673009764093784,
       "psv_mwh": 34.19,
       "psbil_mwh": 34.3,
-      "ttf": 33.236,
+      "ttf": 34.464,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 29.942,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 30.635,
+      "premio_rischio_pct": 12.5
     },
     {
       "mese": "Lug 2029",
@@ -672,12 +678,12 @@
       "psbil": 0.38125507804147957,
       "psv_mwh": 35.55,
       "psbil_mwh": 35.66,
-      "ttf": 32.314,
+      "ttf": 33.769,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 29.112,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 30.054,
+      "premio_rischio_pct": 12.36
     },
     {
       "mese": "Ago 2029",
@@ -686,12 +692,12 @@
       "psbil": 0.37983322642719686,
       "psv_mwh": 35.41,
       "psbil_mwh": 35.53,
-      "ttf": 32.181,
+      "ttf": 33.598,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 28.992,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 29.939,
+      "premio_rischio_pct": 12.22
     },
     {
       "mese": "Set 2029",
@@ -700,12 +706,12 @@
       "psbil": 0.3787107119948685,
       "psv_mwh": 35.31,
       "psbil_mwh": 35.42,
-      "ttf": 32.076,
+      "ttf": 33.438,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 28.897,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 29.834,
+      "premio_rischio_pct": 12.08
     },
     {
       "mese": "Ott 2029",
@@ -714,12 +720,12 @@
       "psbil": 0.37492623476587555,
       "psv_mwh": 34.95,
       "psbil_mwh": 35.07,
-      "ttf": 33.03,
+      "ttf": 34.36,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 29.757,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 30.695,
+      "premio_rischio_pct": 11.94
     },
     {
       "mese": "Nov 2029",
@@ -728,12 +734,12 @@
       "psbil": 0.3791383365405174,
       "psv_mwh": 35.35,
       "psbil_mwh": 35.46,
-      "ttf": 33.424,
+      "ttf": 34.717,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 30.112,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 31.05,
+      "premio_rischio_pct": 11.81
     },
     {
       "mese": "Dic 2029",
@@ -742,12 +748,12 @@
       "psbil": 0.38341458199700656,
       "psv_mwh": 35.75,
       "psbil_mwh": 35.86,
-      "ttf": 33.824,
+      "ttf": 35.07,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 30.472,
-      "premio_rischio_pct": 11.0
+      "ttf_reale": 31.405,
+      "premio_rischio_pct": 11.67
     },
     {
       "mese": "Gen 2030",
@@ -756,12 +762,12 @@
       "psbil": 0.3697199059225999,
       "psv_mwh": 34.47,
       "psbil_mwh": 34.58,
-      "ttf": 33.418,
+      "ttf": 35.004,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 30.38,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 31.385,
+      "premio_rischio_pct": 11.53
     },
     {
       "mese": "Feb 2030",
@@ -770,12 +776,12 @@
       "psbil": 0.3695381654906992,
       "psv_mwh": 34.45,
       "psbil_mwh": 34.57,
-      "ttf": 33.401,
+      "ttf": 34.905,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 30.365,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 31.336,
+      "premio_rischio_pct": 11.39
     },
     {
       "mese": "Mar 2030",
@@ -784,12 +790,12 @@
       "psbil": 0.3680735514218516,
       "psv_mwh": 34.31,
       "psbil_mwh": 34.43,
-      "ttf": 33.264,
+      "ttf": 34.672,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 30.24,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 31.166,
+      "premio_rischio_pct": 11.25
     },
     {
       "mese": "Apr 2030",
@@ -798,12 +804,12 @@
       "psbil": 0.3267578932364051,
       "psv_mwh": 30.45,
       "psbil_mwh": 30.56,
-      "ttf": 29.497,
+      "ttf": 30.346,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 26.815,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 27.312,
+      "premio_rischio_pct": 11.11
     },
     {
       "mese": "Mag 2030",
@@ -812,12 +818,12 @@
       "psbil": 0.3231765376665954,
       "psv_mwh": 30.11,
       "psbil_mwh": 30.23,
-      "ttf": 29.162,
+      "ttf": 29.92,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 26.511,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 26.962,
+      "premio_rischio_pct": 10.97
     },
     {
       "mese": "Giu 2030",
@@ -826,12 +832,12 @@
       "psbil": 0.31953103841493835,
       "psv_mwh": 29.77,
       "psbil_mwh": 29.89,
-      "ttf": 28.821,
+      "ttf": 29.538,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 26.201,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 26.652,
+      "premio_rischio_pct": 10.83
     },
     {
       "mese": "Lug 2030",
@@ -840,12 +846,12 @@
       "psbil": 0.3266901860166774,
       "psv_mwh": 30.44,
       "psbil_mwh": 30.56,
-      "ttf": 27.21,
+      "ttf": 27.879,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 24.736,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 25.187,
+      "premio_rischio_pct": 10.69
     },
     {
       "mese": "Ago 2030",
@@ -854,12 +860,12 @@
       "psbil": 0.3306884755184948,
       "psv_mwh": 30.82,
       "psbil_mwh": 30.93,
-      "ttf": 27.584,
+      "ttf": 28.217,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 25.076,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 25.522,
+      "premio_rischio_pct": 10.56
     },
     {
       "mese": "Set 2030",
@@ -868,12 +874,12 @@
       "psbil": 0.33821466752191576,
       "psv_mwh": 31.52,
       "psbil_mwh": 31.64,
-      "ttf": 28.288,
+      "ttf": 28.872,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 25.716,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 26.147,
+      "premio_rischio_pct": 10.42
     },
     {
       "mese": "Ott 2030",
@@ -882,12 +888,12 @@
       "psbil": 0.3289565961086166,
       "psv_mwh": 30.65,
       "psbil_mwh": 30.77,
-      "ttf": 28.73,
+      "ttf": 29.072,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 26.118,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 26.362,
+      "premio_rischio_pct": 10.28
     },
     {
       "mese": "Nov 2030",
@@ -896,12 +902,12 @@
       "psbil": 0.3382574299764806,
       "psv_mwh": 31.52,
       "psbil_mwh": 31.64,
-      "ttf": 29.6,
+      "ttf": 29.911,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 26.909,
-      "premio_rischio_pct": 10.0
+      "ttf_reale": 27.157,
+      "premio_rischio_pct": 10.14
     },
     {
       "mese": "Dic 2030",
@@ -910,11 +916,11 @@
       "psbil": 0.34383793029719906,
       "psv_mwh": 32.05,
       "psbil_mwh": 32.16,
-      "ttf": 30.122,
+      "ttf": 30.39,
       "cdispd": 0.018468,
       "dispacciamento": 0.009888,
       "capacity_mkt": 0.013492,
-      "ttf_reale": 27.384,
+      "ttf_reale": 27.627,
       "premio_rischio_pct": 10.0
     }
   ],
