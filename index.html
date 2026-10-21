@@ -220,6 +220,11 @@
   .conv-msg { font-size: .78rem; line-height: 1.5; margin-top: 8px; min-height: 18px; }
   .conv-msg.ok { color: #166534; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 8px 12px; }
   .conv-msg.ko { color: #92400E; background: var(--giallo-pale); border: 1px solid #FDE68A; border-radius: 8px; padding: 8px 12px; }
+  /* Flag verde onere di recesso (ver2.19) */
+  .flag-verde { display: flex; gap: 9px; align-items: flex-start; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; padding: 9px 12px; margin: 10px 0 2px; }
+  .flag-verde .spunta { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #16A34A; color: #fff; font-size: .8rem; font-weight: 700; text-align: center; line-height: 20px; }
+  .flag-verde b { display: block; color: #166534; font-size: .84rem; line-height: 1.4; font-weight: 700; }
+  .flag-verde span.sotto { display: block; color: var(--grey-700); font-size: .76rem; line-height: 1.45; margin-top: 3px; font-weight: 400; }
   .bolletta-guida {
     background: var(--giallo-pale); border: 1px solid #F0D898;
     border-radius: var(--radius-sm); padding: 12px 14px;
@@ -1488,6 +1493,7 @@ function leggiOfferteFisse(offerte) {
       adeguamento: (Number.isFinite(o.adeguamento_soglia_kwh) && Number.isFinite(o.adeguamento_extra_kwh))
         ? { soglia_annua: o.adeguamento_soglia_kwh, extra: o.adeguamento_extra_kwh } : null,
       vincolo: ['si', 'sì', 's', 'x', 'true', '1', 'yes', 'vincolo'].includes(vin),
+      nota_uscita: typeof o.nota_uscita === 'string' ? o.nota_uscita.trim() : '',
       valida_fino_al: dataValidita(o),
       consumo_min: Number.isFinite(o.consumo_min) ? o.consumo_min : null,
       consumo_max: Number.isFinite(o.consumo_max) ? o.consumo_max : null,
@@ -1805,18 +1811,24 @@ function mostraRisparmioStimatoInterno() {
       : `Offerta indicizzata: ${o.indice} + ${fmt3(pr.spread)} ${o.unita}${extra}`;
     const validitaHtml = (pr.isFissa && dataValidita(o))
       ? `<div class="risultato-dettaglio" style="${giorniAllaScadenza(dataValidita(o)) <= 7 ? 'color:#B45309;font-weight:600;' : ''}">${testoValidita(o)}</div>` : '';
-    const vincoloHtml = (pr.isFissa && o.vincolo)
-      ? `<div class="risultato-dettaglio" style="color:#92400E;font-weight:600;">In caso di uscita anticipata dal contratto è previsto il pagamento dell'Onere di recesso anticipato.</div>` : '';
+    // Onere di recesso: prima la rassicurazione (cambio piano con lo stesso
+    // operatore sempre consentito, senza penali), poi la regola. Offerta fissa
+    // senza vincolo: "Nessun onere". `nota_uscita` (colonna facoltativa) aggiunge
+    // una riga specifica dell'offerta.
+    const flag = (t, sotto) => `<div class="flag-verde"><div class="spunta">✓</div><div><b>${t}</b>${sotto ? `<span class="sotto">${sotto}</span>` : ''}</div></div>`;
+    const vincoloHtml = !pr.isFissa ? '' : (o.vincolo
+      ? flag('Il cambio piano con lo stesso operatore è sempre consentito, senza alcuna penale.', "L'Onere di recesso anticipato si applica esclusivamente in caso di cambio fornitore." + (o.nota_uscita ? ' ' + o.nota_uscita : ''))
+      : flag('Nessun onere di recesso anticipato.', o.nota_uscita || ''));
     return `<div class="risultato-card">
       <div class="risultato-titolo">${icona} ${etichetta}</div>
       <div class="risultato-offerta">${o.fornitore} — ${o.nome}</div>
       ${o.convenzione ? `<div class="risultato-dettaglio" style="color:#166534;font-weight:600;">Convenzione ${o.convenzione} applicata</div>` : ''}
       ${(convenzione && !o.convenzione) ? `<div class="risultato-dettaglio">Convenzione ${convenzione.nome}: condizioni non applicabili ai consumi indicati, confronto con l'offerta standard.</div>` : ''}
       ${validitaHtml}
-      ${vincoloHtml}
       <div class="risultato-dettaglio">${dettaglioPrezzo} · quota fissa ${o.pcv_anno.toFixed(0)} €/anno (${(o.pcv_anno/12).toFixed(2).replace('.', ',')} €/mese)</div>
       ${riga('Prossimi 12 mesi', v12)}
       ${v36 !== null ? riga('Prossimi 36 mesi', v36) : ''}
+      ${vincoloHtml}
     </div>`;
   };
   let blocchi = '<p class="risultato-leggenda">Un importo con il segno <strong style="color:#166534">−</strong> significa che spenderesti meno di oggi, con il segno <strong style="color:#dc2626">+</strong> che spenderesti di più.</p>';
