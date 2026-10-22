@@ -1554,7 +1554,17 @@ function estraiOfferteConvenzione(offerte) {
   out.fissi.forEach(o => { if (!out.nome && o.convenzione) out.nome = o.convenzione; });
   Object.keys(offerte || {}).forEach(forn => {
     ['luce', 'gas'].forEach(com => {
-      const o = offerte[forn] && offerte[forn][seg] && offerte[forn][seg][com] && offerte[forn][seg][com].variabile;
+      // La variabile di convenzione si riconosce da fix_var = "var" (o, in
+      // mancanza, da spread senza prezzo fisso), NON dal nome della riga: dopo
+      // il passaggio alla scheda generata dallo Store le righe si chiamano
+      // "variabile_confcommercio", "variabile_thegroup" ecc.
+      const tipi = (offerte[forn] && offerte[forn][seg] && offerte[forn][seg][com]) || {};
+      const chiaveVar = Object.keys(tipi).find(t => {
+        const x = tipi[t] || {};
+        const fv = String(x.fix_var || '').trim().toLowerCase();
+        return fv === 'var' || (fv === '' && x.prezzo_fisso === undefined && x.spread !== undefined);
+      });
+      const o = chiaveVar ? tipi[chiaveVar] : null;
       const ok = o && typeof o.nome === 'string' && o.nome.trim() && typeof o.indice === 'string'
         && Number.isFinite(o.spread) && Number.isFinite(o.pcv_anno) && o.pcv_anno > 0;
       if (!ok) return;
