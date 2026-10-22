@@ -1347,28 +1347,32 @@ function mostraOffertaPersonalizzata() {
 // con nome, indice, spread e quota fissa (valori del foglio Offerte_Agenzia,
 // scheda Store, al 06/10/2026 — scritti fissi nel file per scelta di Giulio:
 // "rimarranno per tanto tempo". Se cambiano, vanno aggiornati qui).
-// IMPORTANTE: il sito usa SEMPRE E SOLO offerte variabili/indicizzate, mai
-// prezzi fissi (decisione di Giulio 07/10/2026: i variabili restano uguali nel
-// tempo, i fissi cambiano). Aggiornamento 07/10/2026: ENGAS Gas Azienda
-// spread 0,10 €/Smc; nomi commerciali ENGAS "Engas Bianca PUN16"/"Engas
-// Bianca PSV10", AXPO "Scegli Dinamico 2.0"/"Scegli Dinamico Gas 2.0".
+// AGGIORNAMENTO 23/10/2026 (ver2.21): la scheda "Sito" del foglio è ora
+// generata da formula dallo Store (righe con "x") e contiene anche le offerte
+// fisse e quelle di convenzione (queste ultime sulla scheda Sito_Convenzioni,
+// leggibile solo con un codice valido). I valori scritti qui sotto sono SOLO la
+// riserva per quando lo Script non risponde e coincidono con lo Store definitivo
+// (PULSEE quota fissa 114 con "PROMO" nel nome; ENGAS con i nomi-codice ufficiali
+// PUN10_STD MULTI / GPSV10_STD; ENGAS Gas Azienda spread 0,14 e quota 82,39).
+// Se la scheda risponde, vince sempre quella. Senza risposta, nessuna offerta
+// fissa (solo la variabile di riferimento).
 // - Privati: PULSEE Per Te Luce Index / Per Te Gas Index
 // - Aziende: ENGAS sotto i 5.000 kWh (Luce) e fino a 5.000 Smc (Gas),
 //   AXPO Scegli Variabile sopra quelle soglie. Una soglia per commodity.
 // `adeguamento`: extra sullo spread sotto una soglia di consumo annuo (AXPO).
 const OFFERTE_SITO = {
   Privato: {
-    luce: { fornitore:'PULSEE', nome:'Per Te Luce Index', indice:'PUN',   spread:0,     pcv_anno:108, unita:'€/kWh' },
-    gas:  { fornitore:'PULSEE', nome:'Per Te Gas Index',  indice:'PSbil', spread:0.042, pcv_anno:108, unita:'€/Smc' }
+    luce: { fornitore:'PULSEE', nome:'Per Te Luce Index - PROMO', indice:'PUN',   spread:0,     pcv_anno:114, unita:'€/kWh' },
+    gas:  { fornitore:'PULSEE', nome:'Per Te Gas Index - PROMO',  indice:'PSbil', spread:0.042, pcv_anno:114, unita:'€/Smc' }
   },
   Azienda: {
     luce: {
-      engas: { fornitore:'ENGAS', nome:'Engas Bianca PUN16', indice:'PUN', spread:0.016, pcv_anno:156, unita:'€/kWh' },
+      engas: { fornitore:'ENGAS', nome:'PUN10_STD MULTI', indice:'PUN', spread:0.016, pcv_anno:156, unita:'€/kWh' },
       axpo:  { fornitore:'AXPO',  nome:'Scegli Dinamico 2.0',           indice:'PUN', spread:0.009, pcv_anno:168, unita:'€/kWh',
                adeguamento:{ soglia_annua:50000, extra:0.005 } }
     },
     gas: {
-      engas: { fornitore:'ENGAS', nome:'Engas Bianca PSV10', indice:'PSV',   spread:0.10, pcv_anno:82,  unita:'€/Smc' },
+      engas: { fornitore:'ENGAS', nome:'GPSV10_STD', indice:'PSV',   spread:0.14, pcv_anno:82.39, unita:'€/Smc' },
       axpo:  { fornitore:'AXPO',  nome:'Scegli Dinamico Gas 2.0', indice:'PSbil', spread:0.09, pcv_anno:168, unita:'€/Smc',
                adeguamento:{ soglia_annua:5000, extra:0.02 } }
     }
