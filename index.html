@@ -826,6 +826,9 @@ function aggiornaMeseCompetenzaInfo(commodity) {
 }
 
 const MAKE_WEBHOOK = 'https://hook.eu1.make.com/gl4m4a1d6sgy0d1wyets4dun68af16zs';
+// Pagina di ringraziamento sul sito GoDaddy (conversione GA4 / Meta).
+// Nell'indirizzo va solo il canale scelto, mai dati personali.
+const PAGINA_GRAZIE = 'https://iltuoconsulentedifiducia.net/grazie-appuntamento';
 
 // ── CANALI DI INCONTRO (ver2.10, 09/10/2026) ─────────────────
 // Calendly tolto (costo e lavoro di mantenerlo): il cliente sceglie come
@@ -2334,6 +2337,11 @@ function inviaRichiestaAppuntamento() {
   tenta(1).then(() => {
     campo('confermaTesto').textContent = 'Abbiamo ricevuto la tua richiesta (' + c.titolo.toLowerCase() + '). Ti scriviamo su WhatsApp per fissare giorno e ora' + (payload.fascia_oraria !== 'Indifferente' ? ', di ' + payload.fascia_oraria.toLowerCase() : '') + '.';
     goTo('conferma');
+    // Dalla 2.24: la conferma si vede subito qui, poi la pagina principale del
+    // sito passa a /grazie-appuntamento (conversione GA4 / Meta). Se il cambio
+    // pagina non riesce, resta questa conferma.
+    try { window.top.location.href = PAGINA_GRAZIE + '?canale=' + encodeURIComponent(state.canale); }
+    catch (e) { console.warn('Redirect non riuscito', e); }
   }).catch(e => {
     console.warn('Make: errore invio richiesta', e);
     btn.disabled = false; btn.textContent = 'Invia la richiesta ›';
