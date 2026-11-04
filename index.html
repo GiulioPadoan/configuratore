@@ -220,6 +220,13 @@
   .conv-msg { font-size: .78rem; line-height: 1.5; margin-top: 8px; min-height: 18px; }
   .conv-msg.ok { color: #166534; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 8px 12px; }
   .conv-msg.ko { color: #92400E; background: var(--giallo-pale); border: 1px solid #FDE68A; border-radius: 8px; padding: 8px 12px; }
+  /* Cosa succede dopo la firma (ver2.25) */
+  .dopo-box { margin-top: 18px; background: var(--white); border: 1px solid var(--grey-200); border-left: 3px solid var(--cyan); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 14px 16px; }
+  .dopo-titolo { font-size: .95rem; font-weight: 700; color: var(--blu); margin-bottom: 8px; }
+  .dopo-lista { list-style: none; }
+  .dopo-lista li { position: relative; padding-left: 20px; font-size: .85rem; color: var(--grey-700); line-height: 1.55; margin-top: 6px; }
+  .dopo-lista li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--cyan); font-weight: 700; }
+  .dopo-note { font-size: .8rem; color: var(--grey-700); line-height: 1.6; text-align: center; margin: 14px 0 0; }
   /* Flag verde onere di recesso (ver2.19) */
   .flag-verde { display: flex; gap: 9px; align-items: flex-start; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; padding: 9px 12px; margin: 10px 0 2px; }
   .flag-verde .spunta { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #16A34A; color: #fff; font-size: .8rem; font-weight: 700; text-align: center; line-height: 20px; }
@@ -577,6 +584,14 @@
     Stima calcolata sui dati di mercato aggiornati e sui consumi che hai indicato: al variare dei consumi cambia anche la stima. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.
   </div>
   <div style="margin-top:14px;font-size:.85rem;color:var(--grey-700);">Vuoi pensarci con calma? <button type="button" class="conv-link" onclick="scaricaRiepilogo()">📄 Scarica il riepilogo (PDF)</button></div>
+  <div class="dopo-box">
+    <div class="dopo-titolo">Cosa succede dopo la firma</div>
+    <ul class="dopo-lista">
+      <li>Un referente che conosci e che ti segue nel tempo, non un numero verde.</li>
+      <li>Ogni mese ricevi Nous, con cosa sta cambiando nel mercato e cosa ci aspettiamo.</li>
+      <li>Controlliamo la tua offerta nel tempo e ti chiamiamo noi se smette di essere conveniente.</li>
+    </ul>
+  </div>
   <div class="btn-row" style="margin-top:24px;">
     <button class="btn-back" onclick="goTo('bolletta_cf')">‹ Indietro</button>
     <button class="btn-primary" onclick="vaiAllaScelta()">Prenota la tua consulenza ›</button>
@@ -632,6 +647,7 @@
   </div>
   <div id="err_privacy">Devi accettare l'informativa sulla privacy per inviare la richiesta.</div>
   <span class="field-error" id="err_invio" style="text-align:center;"></span>
+  <p class="dopo-note">I tuoi dati servono solo per fissare l'appuntamento e ricontattarti. Nessun impegno, sei tu a decidere se e quando firmare.</p>
   <div class="btn-row" style="margin-top:16px;">
     <button class="btn-back" onclick="indietroDaCanale()">‹ Indietro</button>
     <button class="btn-primary" id="btnInviaRichiesta" onclick="inviaRichiestaAppuntamento()">Invia la richiesta ›</button>
@@ -2039,6 +2055,18 @@ function costruisciRiepilogoHtml() {
     ${contatti}
   </div>`;
 
+  // ── Cosa succede dopo (ver2.25) ──
+  const faseDopo = (n, titolo, testo) => `<div style="display:flex;gap:14px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #e2e8f0;break-inside:avoid;page-break-inside:avoid;"><div style="flex:none;width:30px;height:30px;border-radius:50%;background:#2563eb;color:#fff;font-weight:700;text-align:center;line-height:30px;font-size:.95rem;">${n}</div><div><div style="font-weight:700;color:#0f172a;font-size:.98rem;">${titolo}</div><div style="color:#334155;font-size:.88rem;line-height:1.55;margin-top:2px;">${testo}</div></div></div>`;
+  const paginaDopo = `<div class="pag">
+    <h2 style="margin:0 0 8px;font-size:1.25rem;color:#0f172a;">Cosa succede dopo</h2>
+    <p style="font-size:.92rem;color:#334155;line-height:1.6;margin:0 0 12px;">Cambiare fornitore è solo l'inizio. Qui trovi cosa succede dopo, così puoi decidere con calma o parlarne in famiglia o col socio.</p>
+    ${faseDopo(1, 'Analisi della bolletta', 'Guardiamo insieme i tuoi dati, in negozio, in sede, in videochiamata o al telefono, come preferisci.')}
+    ${faseDopo(2, 'Firma', 'Prima di firmare hai davanti tutte le condizioni, comprese quelle di uscita anticipata se l\'offerta è a prezzo fisso.')}
+    ${faseDopo(3, 'Nous ogni mese', 'Ricevi cosa cambia nel mercato e cosa ci aspettiamo. Se vuoi, puoi entrare anche nella community, senza obbligo.')}
+    ${faseDopo(4, 'Controllo dell\'offerta', 'Controlliamo la tua offerta nel tempo e ti chiamiamo noi se smette di essere conveniente. Ogni anno facciamo anche un check-in.')}
+    <p style="font-size:.92rem;color:#334155;line-height:1.6;margin:14px 0 0;">Nessuna fretta, decidi quando ti senti pronto.</p>
+  </div>`;
+
   // ── allegati tecnici ──
   const tbl = (titolo, righe) => `<table class="rt"><thead><tr><th colspan="2">${titolo}</th></tr></thead><tbody>${righe.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table>`;
   const cum = (mesi, n) => mesi.slice(0, n).reduce((a, m) => a + m.differenza, 0);
@@ -2118,7 +2146,7 @@ function costruisciRiepilogoHtml() {
       <div><span>Tipo di pratica</span><b>Cambio fornitore</b></div>
       <div><span>Preventivo valido fino a</span><b>${scadenzaPrev}</b></div>
     </div>
-    <p class="come-cop">Nelle pagine seguenti troverai la nostra proposta migliore, <em>basata sulle bollette che ci hai fatto analizzare</em>. Nella parte Allegati tecnici troverai, diviso per Gas e Luce, i dati di mercato, i grafici e tutto ciò che abbiamo utilizzato per l'analisi che trovi in questo documento.</p>
+    <p class="come-cop">Nelle pagine seguenti troverai la nostra proposta migliore, <em>basata sulle bollette che ci hai fatto analizzare</em>. Nella parte Allegati tecnici troverai, diviso per Gas e Luce, i dati di mercato, i grafici e tutto ciò che abbiamo utilizzato per l'analisi che trovi in questo documento. Trovi anche cosa succede dopo la firma, cioè come ti seguiamo nel tempo.</p>
     <div class="cont-cop"><b>Il Tuo Consulente di Fiducia</b><br/>Giulio Padoan — 347 866 5252 — commerciale@iltuoconsulentedifiducia.com<br/>Arianna Zampieri — 349 857 0100 — clienti@iltuoconsulentedifiducia.com</div>
   </div>
   <div class="pag">
@@ -2127,6 +2155,7 @@ function costruisciRiepilogoHtml() {
     <div style="font-size:.66rem;color:#64748b;line-height:1.5;border-top:1px solid #e2e8f0;padding-top:6px;margin-top:4px;">Stima non vincolante, calcolata con i dati di mercato disponibili al ${dataIt} e nell'ipotesi che consumi e condizioni di partenza restino invariati. Riguarda solo la spesa per la materia energia e/o gas, al netto di oneri di sistema, imposte e IVA. Il dettaglio dei calcoli e le fonti sono negli allegati tecnici. La simulazione rispecchia il codice di condotta commerciale previsto dalla delibera ARERA 189/2026/R/com.</div>
   </div>
   ${pagina3}
+  ${paginaDopo}
   <div class="pag divisorio"><div class="div-linea"></div><h2>Allegati tecnici</h2><p>Le pagine che seguono contengono i calcoli, i grafici, i dati di mercato e le note normative. Servono a chi vuole verificare ogni numero: per decidere bastano le pagine precedenti.</p></div>
   <div>${noteMet}${allegati}${fonti}</div>
 </body></html>`;
