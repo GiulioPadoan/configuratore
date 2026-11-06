@@ -441,6 +441,7 @@
   <p class="subtitle" id="propostaSubtitle" style="margin-bottom:16px;"></p>
   <div id="propostaBulletsWrap" style="margin-bottom:20px;"></div>
   <div class="info-block" id="propostaChiusura"></div>
+  <div class="dopo-box" id="propostaDopo" data-dopo style="display:none;"></div>
   <div class="btn-row" style="margin-top:24px;">
     <button class="btn-primary" id="propostaBtn" onclick="goToDestinazione()">Prenota la tua consulenza ›</button>
   </div>
@@ -584,14 +585,7 @@
     Stima calcolata sui dati di mercato aggiornati e sui consumi che hai indicato: al variare dei consumi cambia anche la stima. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.
   </div>
   <div style="margin-top:14px;font-size:.85rem;color:var(--grey-700);">Vuoi pensarci con calma? <button type="button" class="conv-link" onclick="scaricaRiepilogo()">📄 Scarica il riepilogo (PDF)</button></div>
-  <div class="dopo-box">
-    <div class="dopo-titolo">Cosa succede dopo la firma</div>
-    <ul class="dopo-lista">
-      <li>Un referente che conosci e che ti segue nel tempo, non un numero verde.</li>
-      <li>Ogni mese ricevi Nous, con cosa sta cambiando nel mercato e cosa ci aspettiamo.</li>
-      <li>Controlliamo la tua offerta nel tempo e ti chiamiamo noi se smette di essere conveniente.</li>
-    </ul>
-  </div>
+  <div class="dopo-box" id="dopoStima" data-dopo></div>
   <div class="btn-row" style="margin-top:24px;">
     <button class="btn-back" onclick="goTo('bolletta_cf')">‹ Indietro</button>
     <button class="btn-primary" onclick="vaiAllaScelta()">Prenota la tua consulenza ›</button>
@@ -604,6 +598,7 @@
   <div class="display">Come preferisci incontrarci?</div>
   <p class="subtitle" style="margin-bottom:16px;">Scegli la modalità e lasciaci i tuoi dati: ti ricontattiamo noi per fissare giorno e ora.</p>
 
+  <div class="dopo-box" id="canaleDopo" data-dopo style="display:none;margin:0 0 16px;"></div>
   <div class="choice-grid col1" id="canaleOpzioni" style="margin-bottom:6px;"></div>
   <span class="field-error" id="err_canale"></span>
 
@@ -860,6 +855,22 @@ const CANALI_INCONTRO = {
   telefono:  { icona:'📞', titolo:'Telefonata',            hint:'Ti chiamiamo noi', referente:'Giulio' }
 };
 let passoPrimaDelCanale = 'proposta';
+
+// Testi del riquadro "Cosa succede dopo la firma" (ver2.26): un solo posto per
+// tutti i riquadri (stima, proposta, canale). Si riempiono da qui all'avvio.
+const DOPO_TITOLO = 'Cosa succede dopo la firma';
+const DOPO_PUNTI = [
+  'Un referente che conosci e che ti segue nel tempo, non un numero verde.',
+  'Ogni mese ricevi Nous, con cosa sta cambiando nel mercato e cosa ci aspettiamo.',
+  'Controlliamo la tua offerta nel tempo e ti chiamiamo noi se smette di essere conveniente.'
+];
+function riempiDopoBox() {
+  document.querySelectorAll('[data-dopo]').forEach(el => {
+    el.innerHTML = '<div class="dopo-titolo">' + DOPO_TITOLO + '</div><ul class="dopo-lista">'
+      + DOPO_PUNTI.map(t => '<li>' + t + '</li>').join('') + '</ul>';
+  });
+}
+riempiDopoBox();
 
 // SVG arrows
 const ARR_L = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
@@ -1223,6 +1234,8 @@ function buildEmostraProposta() {
     ? content.chiusura.replace(/Prenota la tua consulenza( — parliamoci)?\./, 'Inserisci i dati della tua bolletta e ti mostriamo il confronto con la nostra offerta.')
     : content.chiusura;
   document.getElementById('propostaBtn').innerHTML = cfProposta ? 'Controlla la tua bolletta ›' : 'Prenota la tua consulenza ›';
+  // Chi fa un Cambio Fornitore vede il riquadro nella schermata della stima, non due volte.
+  document.getElementById('propostaDopo').style.display = cfProposta ? 'none' : 'block';
   const siKeys = PROPOSTA_PRIORITY.filter(k => state[k] === 'si').slice(0,3);
   const bulletsWrap = document.getElementById('propostaBulletsWrap');
   if (siKeys.length > 0 && profilo !== 'prezzo') {
@@ -1820,8 +1833,9 @@ function mostraRisparmioStimatoInterno() {
 
   if (luce12 === null && gas12 === null) {
     // Dati di mercato non disponibili o insufficienti per un calcolo reale:
-    // niente numeri inventati, si salta lo step e si va diretto alla scelta del canale.
-    vaiAllaScelta();
+    // niente numeri inventati, si salta lo step e si va diretto alla scelta del canale
+    // (ver2.26: il riquadro 'Cosa succede dopo la firma' lo vede lì, altrimenti non lo vedrebbe mai).
+    vaiAllaScelta(true);
     return;
   }
 
@@ -2286,7 +2300,7 @@ function inviaAMake(payload) {
 // invio "lead" a Make in questo punto: a Make arriva solo la richiesta di
 // appuntamento, quando il cliente invia il form (un solo invio, una sola
 // mail). Chi si ferma prima del form non lascia traccia.
-function vaiAllaScelta() {
+function vaiAllaScelta(mostraDopo) {
   const visibile = [...document.querySelectorAll('.card')].find(c => c.style.display === 'block');
   if (visibile && visibile.id !== 'step_canale') passoPrimaDelCanale = visibile.id.replace('step_', '');
 
@@ -2297,6 +2311,7 @@ function vaiAllaScelta() {
       <span class="choice-icon">${c.icona}</span>
       <span class="choice-label">${c.titolo}<span class="choice-hint">${c.hint}</span></span>
     </div>`).join('');
+  document.getElementById('canaleDopo').style.display = mostraDopo === true ? 'block' : 'none';
   document.getElementById('campo_ragione_sociale').style.display = isAzienda ? 'block' : 'none';
   document.getElementById('campo_indirizzo').style.display = state.canale === 'sede' ? 'block' : 'none';
   goTo('canale');
