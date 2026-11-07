@@ -862,7 +862,7 @@ const DOPO_TITOLO = 'Cosa succede dopo la firma';
 const DOPO_PUNTI = [
   'Un referente che conosci e che ti segue nel tempo, non un numero verde.',
   'Ogni mese ricevi Nous, con cosa sta cambiando nel mercato e cosa ci aspettiamo.',
-  'Facciamo il punto sull\'offerta ogni anno, e ogni settimana la confrontiamo se hai il variabile.'
+  'Facciamo il punto sull\'offerta ogni anno, e ogni settimana la confrontiamo con le nostre altre offerte.'
 ];
 function riempiDopoBox() {
   document.querySelectorAll('[data-dopo]').forEach(el => {
@@ -2077,7 +2077,7 @@ function costruisciRiepilogoHtml() {
     ${faseDopo(1, 'Analisi della bolletta', 'Guardiamo insieme i tuoi dati, in negozio, in sede, in videochiamata o al telefono, come preferisci.')}
     ${faseDopo(2, 'Firma', 'Prima di firmare hai davanti tutte le condizioni, comprese quelle di uscita anticipata se l\'offerta è a prezzo fisso.')}
     ${faseDopo(3, 'Nous ogni mese', 'Ricevi cosa cambia nel mercato e cosa ci aspettiamo. Se vuoi, puoi entrare anche nella community, senza obbligo.')}
-    ${faseDopo(4, 'Controllo dell\'offerta', 'Se hai il prezzo variabile, ogni settimana confrontiamo il tuo prezzo con le altre nostre offerte e ti scriviamo noi quando troviamo una soluzione più economica. Se hai il fisso, il prezzo resta bloccato per tutta la durata e le condizioni di uscita le conosci dalla firma. Ogni anno facciamo anche un check-in.')}
+    ${faseDopo(4, 'Controllo dell\'offerta', 'Ogni settimana confrontiamo il tuo prezzo con le altre nostre offerte e ti scriviamo noi quando troviamo un\'offerta più economica di almeno il 10%. Se hai il fisso, il prezzo resta bloccato per tutta la durata e le condizioni di uscita le conosci dalla firma. Ogni anno facciamo anche un check-in.')}
     <p style="font-size:.92rem;color:#334155;line-height:1.6;margin:14px 0 0;">Nessuna fretta, decidi quando ti senti pronto.</p>
   </div>`;
 
