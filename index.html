@@ -220,6 +220,11 @@
   .conv-msg { font-size: .78rem; line-height: 1.5; margin-top: 8px; min-height: 18px; }
   .conv-msg.ok { color: #166534; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 8px 12px; }
   .conv-msg.ko { color: #92400E; background: var(--giallo-pale); border: 1px solid #FDE68A; border-radius: 8px; padding: 8px 12px; }
+  /* Telefono / browser interno (ver2.29) */
+  .nota-browser { display: none; margin: -6px 0 18px; padding: 10px 12px; background: var(--giallo-pale); border: 1px solid #F0D898; border-radius: var(--radius-sm); font-size: .78rem; line-height: 1.55; color: var(--grey-700); }
+  .passo-prenota { margin: 16px 0 14px; }
+  .passo-prenota p { font-size: .92rem; font-weight: 600; color: var(--blu); line-height: 1.5; margin-bottom: 10px; }
+  .passo-prenota .btn-primary { width: 100%; }
   /* Cosa succede dopo la firma (ver2.25) */
   .dopo-box { margin-top: 18px; background: var(--white); border: 1px solid var(--grey-200); border-left: 3px solid var(--cyan); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 14px 16px; }
   .dopo-titolo { font-size: .95rem; font-weight: 700; color: var(--blu); margin-bottom: 8px; }
@@ -262,6 +267,7 @@
   <div class="eyebrow">Configuratore gratuito</div>
   <div class="display">La soluzione energetica giusta per Te</div>
   <p class="subtitle">Hai già un'offerta in mano e non sai se conviene davvero? Rispondi a poche domande e vediamo insieme la soluzione più adatta alla tua situazione. Per valutare un cambio fornitore, tieni la bolletta a portata di mano.</p>
+  <p class="nota-browser" id="introBrowserInterno">Stai usando il browser di Instagram o Facebook: se alla fine vuoi scaricare il riepilogo in PDF, apri prima la pagina nel browser (tocca ⋯ in alto e scegli Apri nel browser).</p>
   <div class="proof">
     <span class="proof-stars">★★★★★</span>
     <span class="proof-text"><strong>4,9 / 5</strong> su 74 recensioni Google</span>
@@ -581,10 +587,14 @@
   <div class="display" id="risparmioTitolo">Il confronto con la tua bolletta</div>
   <p class="subtitle" id="risparmioStimatoSubtitle" style="margin-bottom:16px;"></p>
   <div id="risparmioStimatoBox"></div>
+  <div class="passo-prenota" id="stimaPasso">
+    <p id="stimaPassoTesto">Il prossimo passo: verifichiamo insieme questi numeri sulla tua bolletta.</p>
+    <button class="btn-primary" onclick="vaiAllaScelta()">Prenota la tua consulenza ›</button>
+  </div>
   <div class="info-block" id="risparmioNota" style="margin-top:8px;">
     Stima calcolata sui dati di mercato aggiornati e sui consumi che hai indicato: al variare dei consumi cambia anche la stima. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.
   </div>
-  <div style="margin-top:14px;font-size:.85rem;color:var(--grey-700);">Vuoi pensarci con calma? <button type="button" class="conv-link" onclick="scaricaRiepilogo()">📄 Scarica il riepilogo (PDF)</button></div>
+  <div id="riepilogoPdfRiga" style="margin-top:14px;font-size:.85rem;color:var(--grey-700);">Vuoi pensarci con calma? <button type="button" class="conv-link" onclick="scaricaRiepilogo()">📄 Scarica il riepilogo (PDF)</button></div>
   <div class="dopo-box" id="dopoStima" data-dopo></div>
   <div class="btn-row" style="margin-top:24px;">
     <button class="btn-back" onclick="goTo('bolletta_cf')">‹ Indietro</button>
@@ -858,6 +868,25 @@ let passoPrimaDelCanale = 'proposta';
 
 // Testi del riquadro "Cosa succede dopo la firma" (ver2.26): un solo posto per
 // tutti i riquadri (stima, proposta, canale). Si riempiono da qui all'avvio.
+// ── Telefono e browser interno di Instagram/Facebook (ver2.29) ──
+// Il browser interno di Instagram/Facebook blocca la stampa: da lì il PDF non si
+// scarica. Il riconoscimento sta in questa sola funzione.
+function isBrowserInterno() {
+  return /Instagram|FBAN|FBAV|FB_IAB/i.test(navigator.userAgent || '');
+}
+function isTelefono() {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || window.innerWidth < 700;
+}
+function applicaBrowserInterno() {
+  const interno = isBrowserInterno();
+  document.getElementById('introBrowserInterno').style.display = interno ? 'block' : 'none';
+  if (interno) {
+    document.getElementById('riepilogoPdfRiga').textContent =
+      'Da qui il PDF non si scarica: fai uno screenshot di questa pagina, oppure prenota e il riepilogo lo vediamo insieme.';
+  }
+}
+applicaBrowserInterno();
+
 const DOPO_TITOLO = 'Cosa succede dopo la firma';
 const DOPO_PUNTI = [
   'Un referente che conosci e che ti segue nel tempo, non un numero verde.',
@@ -1361,6 +1390,7 @@ function validateBolletta() {
 }
 
 function mostraOffertaPersonalizzata() {
+  document.getElementById('stimaPassoTesto').textContent = "Il prossimo passo: costruiamo insieme l'offerta sui tuoi consumi.";
   document.getElementById('risparmioEyebrow').textContent = 'Offerta dedicata';
   document.getElementById('risparmioTitolo').textContent = 'Per i tuoi consumi l\'offerta va costruita su misura';
   document.getElementById('risparmioStimatoSubtitle').textContent =
@@ -1823,6 +1853,7 @@ function mostraRisparmioStimato() {
 }
 
 function mostraRisparmioStimatoInterno() {
+  document.getElementById('stimaPassoTesto').textContent = 'Il prossimo passo: verifichiamo insieme questi numeri sulla tua bolletta.';
   const luceCF = document.getElementById('bollettaLuceSection').style.display !== 'none';
   const gasCF  = document.getElementById('bollettaGasSection').style.display  !== 'none';
 
@@ -2149,7 +2180,7 @@ function costruisciRiepilogoHtml() {
   .no-stampa button { margin-left: 10px; padding: 5px 14px; border: 0; border-radius: 99px; background: #5272ff; color: #fff; font-weight: 700; cursor: pointer; }
   @media print { .no-stampa { display: none !important; } }
 </style></head><body>
-  <div class="no-stampa">Per salvare il riepilogo in PDF premi <b>⌘P</b> (Mac) o <b>Ctrl+P</b> (Windows) e scegli <b>«Salva come PDF»</b>. <button type="button" onclick="window.print()">Stampa / Salva PDF</button></div>
+  <div class="no-stampa">${isTelefono() ? 'Tocca <b>Stampa / Salva PDF</b>, poi condividi o salva il file.' : 'Per salvare il riepilogo in PDF premi <b>⌘P</b> (Mac) o <b>Ctrl+P</b> (Windows) e scegli <b>«Salva come PDF»</b>.'} <button type="button" onclick="window.print()">Stampa / Salva PDF</button></div>
   <div class="pag cop">
     <img class="logo-cop" src="${LOGO_RIEPILOGO}" alt="Giulio Padoan — Il Tuo Consulente di Fiducia"/>
     <h1 class="tit-cop">Analisi e proposta per il tuo profilo di consumo</h1>
