@@ -880,10 +880,8 @@ function isTelefono() {
 function applicaBrowserInterno() {
   const interno = isBrowserInterno();
   document.getElementById('introBrowserInterno').style.display = interno ? 'block' : 'none';
-  if (interno) {
-    document.getElementById('riepilogoPdfRiga').textContent =
-      'Da qui il PDF non si scarica: fai uno screenshot di questa pagina, oppure prenota e il riepilogo lo vediamo insieme.';
-  }
+  // Nel browser interno la riga del PDF sparisce del tutto (nessun link, nessun messaggio).
+  document.getElementById('riepilogoPdfRiga').style.display = interno ? 'none' : '';
 }
 applicaBrowserInterno();
 
