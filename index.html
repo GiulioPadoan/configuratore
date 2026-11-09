@@ -221,7 +221,6 @@
   .conv-msg.ok { color: #166534; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 8px 12px; }
   .conv-msg.ko { color: #92400E; background: var(--giallo-pale); border: 1px solid #FDE68A; border-radius: 8px; padding: 8px 12px; }
   /* Telefono / browser interno (ver2.29) */
-  .nota-browser { display: none; margin: -6px 0 18px; padding: 10px 12px; background: var(--giallo-pale); border: 1px solid #F0D898; border-radius: var(--radius-sm); font-size: .78rem; line-height: 1.55; color: var(--grey-700); }
   .passo-prenota { margin: 16px 0 14px; }
   .passo-prenota p { font-size: .92rem; font-weight: 600; color: var(--blu); line-height: 1.5; margin-bottom: 10px; }
   .passo-prenota .btn-primary { width: 100%; }
@@ -267,7 +266,6 @@
   <div class="eyebrow">Configuratore gratuito</div>
   <div class="display">La soluzione energetica giusta per Te</div>
   <p class="subtitle">Hai già un'offerta in mano e non sai se conviene davvero? Rispondi a poche domande e vediamo insieme la soluzione più adatta alla tua situazione. Per valutare un cambio fornitore, tieni la bolletta a portata di mano.</p>
-  <p class="nota-browser" id="introBrowserInterno">Stai usando il browser di Instagram o Facebook: se alla fine vuoi scaricare il riepilogo in PDF, apri prima la pagina nel browser (tocca ⋯ in alto e scegli Apri nel browser).</p>
   <div class="proof">
     <span class="proof-stars">★★★★★</span>
     <span class="proof-text"><strong>4,9 / 5</strong> su 74 recensioni Google</span>
@@ -879,7 +877,6 @@ function isTelefono() {
 }
 function applicaBrowserInterno() {
   const interno = isBrowserInterno();
-  document.getElementById('introBrowserInterno').style.display = interno ? 'block' : 'none';
   // Nel browser interno la riga del PDF sparisce del tutto (nessun link, nessun messaggio).
   document.getElementById('riepilogoPdfRiga').style.display = interno ? 'none' : '';
 }
