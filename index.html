@@ -631,6 +631,19 @@
     <span class="field-error" id="err_rich_indirizzo"></span>
   </div>
   <div class="field">
+    <label>Come ci hai conosciuto?</label>
+    <select id="rich_origine">
+      <option value="" selected disabled>Scegli una risposta</option>
+      <option value="Instagram/Facebook">Instagram o Facebook</option>
+      <option value="Passaparola">Passaparola (amici, parenti, colleghi)</option>
+      <option value="Google">Google</option>
+      <option value="Negozio">Passavo davanti al negozio</option>
+      <option value="Altro">Altro</option>
+      <option value="Non ricordo">Non ricordo</option>
+    </select>
+    <span class="field-error" id="err_rich_origine"></span>
+  </div>
+  <div class="field">
     <label>Quando preferisci essere ricontattato?</label>
     <select id="rich_fascia">
       <option value="Indifferente">Indifferente</option>
@@ -2372,6 +2385,7 @@ function inviaRichiestaAppuntamento() {
   const cifre = campo('rich_telefono').value.replace(/\D/g, '');
   controlla('rich_telefono', cifre.length >= 8 && cifre.length <= 15, 'Inserisci un numero di telefono valido.');
   if (state.canale === 'sede') controlla('rich_indirizzo', campo('rich_indirizzo').value.trim().length > 5, 'Indica l\'indirizzo della sede.');
+  controlla('rich_origine', campo('rich_origine').value !== '', 'Scegli come ci hai conosciuto (va bene anche Non ricordo).');
   // Consenso privacy: raccolto QUI, dove si chiedono nome e telefono (prima
   // stava nello step email, tolto in ver2.14). Checkbox non pre-spuntata,
   // con timestamp come prova del consenso.
@@ -2393,6 +2407,7 @@ function inviaRichiestaAppuntamento() {
     nome_cognome: campo('rich_nome').value.trim(),
     telefono: campo('rich_telefono').value.trim(),
     indirizzo_visita: state.canale === 'sede' ? campo('rich_indirizzo').value.trim() : '—',
+    come_ci_hai_conosciuto: campo('rich_origine').value,
     fascia_oraria: campo('rich_fascia').value,
     note_cliente: campo('rich_note').value.trim() || '—',
     ricontatto: 'WhatsApp dal 347 866 5252'
