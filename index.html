@@ -1753,9 +1753,87 @@ function getAreraPerMesi(campo, mesi) {
 // - "nostra offerta": (indice + spread) × perdite di rete (solo Luce) +
 //   componenti ARERA (mai moltiplicate per le perdite di rete)
 // - differenza mese per mese su energia + quota fissa, per 12 e 36 mesi
-function getMeseInizioFornitura() {
-  const oggi = new Date();
+// ── Switch 24 ore (ver2.33, 11/11/2026) — clienti domestici (Privato), SOLO Luce ──
+// Da oggi (11/11/2026) gli switch della Luce per i clienti domestici sono BLOCCATI fino al
+// 30 novembre e partono tutti il 1° dicembre; dal 1° dicembre il cambio richiede circa due
+// settimane. Regola: data di riferimento = il più tardi tra oggi e il 1° dicembre 2026;
+// decorrenza potenziale = riferimento + 10 giorni lavorativi (più larghi dei 7 previsti, per
+// non avere intoppi all'inizio; da oggi al 30/11 la decorrenza è il 16 dicembre). Il tool
+// ragiona a mesi interi: la proiezione parte dal 1° del mese SUCCESSIVO alla decorrenza
+// (mai dopo il vecchio M+2). Gas e Aziende restano come prima (1° del mese M+2).
+const SWITCH24_DAL = new Date(2026, 11, 1);
+const SWITCH24_GG_LAVORATIVI = 10;
+function oggiRif() { return window.__OGGI_TEST ? new Date(window.__OGGI_TEST) : new Date(); }
+function pasquetta(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const mese = Math.floor((h + l - 7 * m + 114) / 31), giorno = ((h + l - 7 * m + 114) % 31) + 1;
+  const p = new Date(y, mese - 1, giorno); p.setDate(p.getDate() + 1); return p;
+}
+function isFestivo(d) {
+  if (['1-1', '1-6', '4-25', '5-1', '6-2', '8-15', '11-1', '12-8', '12-25', '12-26'].includes((d.getMonth() + 1) + '-' + d.getDate())) return true;
+  const p = pasquetta(d.getFullYear());
+  return p.getMonth() === d.getMonth() && p.getDate() === d.getDate();
+}
+function aggiungiGiorniLavorativi(da, n) {
+  const x = new Date(da.getFullYear(), da.getMonth(), da.getDate());
+  let k = 0;
+  while (k < n) { x.setDate(x.getDate() + 1); const w = x.getDay(); if (w !== 0 && w !== 6 && !isFestivo(x)) k++; }
+  return x;
+}
+function getMeseInizioFornitura(commodity) {
+  const oggi = oggiRif();
+  if (commodity === 'luce' && state.tipo_cliente === 'Privato') {
+    const rif = oggi < SWITCH24_DAL ? SWITCH24_DAL : oggi;   // fino al 30/11 switch bloccati: partono tutti il 1° dicembre
+    const d = aggiungiGiorniLavorativi(rif, SWITCH24_GG_LAVORATIVI);
+    return new Date(d.getFullYear(), d.getMonth() + 1, 1);
+  }
   return new Date(oggi.getFullYear(), oggi.getMonth() + 2, 1);
+}
+// Partenze delle commodity con cambio fornitore (chiavi 'luce' / 'gas').
+function partenzeFornitura() {
+  const out = {};
+  if (state.commodity.includes('Luce') && state.op_luce === 'Cambio Fornitore') out.luce = getMeseInizioFornitura('luce');
+  if (state.commodity.includes('Gas') && state.op_gas === 'Cambio Fornitore') out.gas = getMeseInizioFornitura('gas');
+  return out;
+}
+function testoMeseInizioPerMake() {
+  const pr = partenzeFornitura(), fm = d => d.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+  if (pr.luce && pr.gas && pr.luce.getTime() !== pr.gas.getTime()) return 'Luce: ' + fm(pr.luce) + ' · Gas: ' + fm(pr.gas);
+  return fm(pr.luce || pr.gas || getMeseInizioFornitura('gas'));
+}
+function testoInizioFornitura() {
+  const pr = partenzeFornitura(), fm = d => d.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+  if (pr.luce && pr.gas && pr.luce.getTime() !== pr.gas.getTime()) {
+    return 'per la Luce dal 1° ' + fm(pr.luce) + ' e per il Gas dal 1° ' + fm(pr.gas) + ' (date di inizio fornitura ipotizzate)';
+  }
+  return 'dal 1° ' + fm(pr.luce || pr.gas || getMeseInizioFornitura('gas')) + ' (data di inizio fornitura ipotizzata)';
+}
+// Grafico "Quando parte la fornitura": solo se Luce e Gas partono in mesi diversi.
+function costruisciTimelineInizioHtml(compatto) {
+  const pr = partenzeFornitura();
+  if (!pr.luce || !pr.gas || pr.luce.getTime() === pr.gas.getTime()) return '';
+  const oggi = oggiRif(), pos0 = oggi.getFullYear() * 12 + oggi.getMonth();
+  const posL = pr.luce.getFullYear() * 12 + pr.luce.getMonth(), posG = pr.gas.getFullYear() * 12 + pr.gas.getMonth();
+  const N = Math.max(posL, posG) - pos0 + 2;
+  const nomeMese = p => new Date(Math.floor(p / 12), p % 12, 1).toLocaleDateString('it-IT', { month: 'short' }).replace('.', '');
+  let testa = '<div></div>';
+  for (let i = 0; i < N; i++) testa += `<div style="text-align:center;color:#64748b;font-size:.68rem;text-transform:capitalize;">${nomeMese(pos0 + i)}</div>`;
+  const riga = (emoji, nome, posS, colore) => {
+    const attesa = posS - pos0, resto = N - attesa;
+    return `<div style="font-weight:700;font-size:.78rem;align-self:center;">${emoji} ${nome}</div>
+      <div style="grid-column:2 / span ${attesa};background:repeating-linear-gradient(135deg,#e2e8f0,#e2e8f0 4px,#f1f5f9 4px,#f1f5f9 8px);border-radius:6px 0 0 6px;height:20px;"></div>
+      <div style="grid-column:${2 + attesa} / span ${resto};background:${colore};border-radius:0 6px 6px 0;height:20px;color:#fff;font-size:.68rem;font-weight:700;line-height:20px;padding-left:8px;">fornitura attiva</div>`;
+  };
+  const f = d => '1° ' + d.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+  return `<div style="margin:${compatto ? '8px auto 10px' : '12px 0 16px'};padding:${compatto ? '10px 12px' : '12px 14px'};border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;break-inside:avoid;page-break-inside:avoid;${compatto ? 'max-width:560px;width:100%;box-sizing:border-box;' : ''}">
+    <div style="font-weight:700;font-size:.85rem;color:#0f172a;margin-bottom:8px;">Quando parte la fornitura</div>
+    <div style="display:grid;grid-template-columns:62px repeat(${N}, 1fr);gap:4px 0;align-items:center;">
+      ${testa}${riga('💡', 'Luce', posL, '#2563eb')}${riga('🔥', 'Gas', posG, '#ea580c')}
+    </div>
+    <div style="font-size:.74rem;color:#475569;line-height:1.5;margin-top:6px;">Per la <b>Luce</b> di casa il cambio richiede circa due settimane, quindi i conti partono dal <b>${f(pr.luce)}</b>. Per il <b>Gas</b> servono circa due mesi, quindi i conti partono dal <b>${f(pr.gas)}</b>. La parte a righe è il periodo di attesa della pratica.</div>
+  </div>`;
 }
 // Proiezione mese per mese di UNA offerta (variabile o fissa). Per la fissa:
 // prezzo piatto per durata_mesi, poi indice_dopo_scadenza + spread_dopo_scadenza
@@ -1788,7 +1866,7 @@ function calcolaProiezioneOfferta(commodity, offertaBase) {
     if (valRif > 0) spreadImplicito = prezzoCliente - valRif;
   }
 
-  const inizio = getMeseInizioFornitura();
+  const inizio = getMeseInizioFornitura(commodity);
   const posInizio = inizio.getFullYear() * 12 + inizio.getMonth();
   const consumoMensile = consumoAnnuo / 12;
   const mesi = [];
@@ -1929,11 +2007,9 @@ function mostraRisparmioStimatoInterno() {
     </div>`;
   }
 
-  const inizioForn = getMeseInizioFornitura();
-  const meseInizioTxt = inizioForn.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
   document.getElementById('risparmioStimatoSubtitle').textContent =
-    'Ecco la differenza rispetto a quanto paghi oggi, confrontando la tua bolletta con l\'offerta indicata qui sotto. Calcolata sui dati di mercato aggiornati e sui consumi che hai indicato, dal 1° ' + meseInizioTxt + ' (data di inizio fornitura ipotizzata).';
-  document.getElementById('risparmioStimatoBox').innerHTML = blocchi;
+    'Ecco la differenza rispetto a quanto paghi oggi, confrontando la tua bolletta con l\'offerta indicata qui sotto. Calcolata sui dati di mercato aggiornati e sui consumi che hai indicato, ' + testoInizioFornitura() + '.';
+  document.getElementById('risparmioStimatoBox').innerHTML = costruisciTimelineInizioHtml() + blocchi;
   document.getElementById('risparmioEyebrow').textContent = 'La tua stima';
   document.getElementById('risparmioTitolo').textContent = 'Il confronto con la tua bolletta';
   const notaEl = document.getElementById('risparmioNota');
@@ -2199,6 +2275,7 @@ function costruisciRiepilogoHtml() {
       <div><span>Tipo di pratica</span><b>Cambio fornitore</b></div>
       <div><span>Preventivo valido fino a</span><b>${scadenzaPrev}</b></div>
     </div>
+    ${costruisciTimelineInizioHtml(true)}
     <p class="come-cop">Nelle pagine seguenti troverai la nostra proposta migliore, <em>basata sulle bollette che ci hai fatto analizzare</em>. Nella parte Allegati tecnici troverai, diviso per Gas e Luce, i dati di mercato, i grafici e tutto ciò che abbiamo utilizzato per l'analisi che trovi in questo documento. Trovi anche cosa succede dopo la firma, cioè come ti seguiamo nel tempo.</p>
     <div class="cont-cop"><b>Il Tuo Consulente di Fiducia</b><br/>Giulio Padoan — 347 866 5252 — commerciale@iltuoconsulentedifiducia.com<br/>Arianna Zampieri — 349 857 0100 — clienti@iltuoconsulentedifiducia.com</div>
   </div>
@@ -2268,7 +2345,7 @@ function risparmiPerPayload() {
     risparmio_luce_12: testoRisparmio(l12), risparmio_luce_36: testoRisparmio(l36),
     risparmio_gas_12: testoRisparmio(g12), risparmio_gas_36: testoRisparmio(g36),
     risparmio_totale_12: testoRisparmio(somma(l12, g12)), risparmio_totale_36: testoRisparmio(somma(l36, g36)),
-    mese_inizio_fornitura: haDati ? getMeseInizioFornitura().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }) : '—'
+    mese_inizio_fornitura: haDati ? testoMeseInizioPerMake() : '—'
   };
 }
 
