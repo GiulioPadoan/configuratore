@@ -2186,8 +2186,9 @@ function costruisciRiepilogoHtml() {
   const dove = state.tipo_cliente === 'Privato' ? 'in questa casa' : 'in questa sede';
   const riga = (n, t) => `<div style="display:flex;align-items:center;gap:16px;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:.85rem;color:#1e293b;break-inside:avoid;"><div style="flex:1;"><strong>${n}.</strong> ${t}</div><div style="flex:none;width:96px;text-align:right;white-space:nowrap;color:#475569;">☐ Sì &nbsp;&nbsp; ☐ No</div></div>`;
   const SERV = { servizio_q1: ['👤', 'Referente dedicato', 'Una sola persona segue la tua pratica.'], servizio_q2: ['🛡️', 'Numero unico anti-truffa', 'Solo i nostri recapiti parlano del tuo contratto.'],
-    servizio_q3: ['🏬', 'Store fisico', 'Negli orari di apertura, meglio su appuntamento, a Santa Maria di Zevio.'], servizio_q4: ['📈', 'Aggiornamento mensile sui mercati', 'Un report chiaro sui mercati, ogni mese.'], servizio_q5: ['✅', 'Check annuale della fornitura', 'Ogni anno verifichiamo se è ancora la scelta migliore.'] };
-  const siK = Object.keys(SERV).filter(k => state[k] === 'si');
+    servizio_q3: ['🏬', 'Store fisico', 'Negli orari di apertura, meglio su appuntamento, a Santa Maria di Zevio.'], servizio_q4: ['📈', 'Aggiornamento mensile sui mercati', 'Un report chiaro sui mercati, ogni mese.'], servizio_controllo: ['📊', 'Controllo settimanale dell\'offerta', 'Ogni settimana confrontiamo il tuo prezzo con le altre nostre offerte.'], servizio_q5: ['✅', 'Check annuale della fornitura', 'Ogni anno verifichiamo se è ancora la scelta migliore.'] };
+  // servizio_controllo (ver2.37) non dipende dalle risposte: c'è sempre, subito prima del check annuale.
+  const siK = Object.keys(SERV).filter(k => k === 'servizio_controllo' || state[k] === 'si');
   const serviziHtml = siK.length
     ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:.8rem;">${siK.map(k => `<div style="display:flex;gap:8px;"><span style="font-size:1.1rem;line-height:1.3;">${SERV[k][0]}</span><span><strong style="display:block;">${SERV[k][1]}</strong><span style="color:#475569;">${SERV[k][2]}</span></span></div>`).join('')}</div>`
     : '<p style="font-size:.85rem;color:#475569;">Un referente dedicato ti segue in ogni fase, con assistenza continua della nostra Agenzia.</p>';
