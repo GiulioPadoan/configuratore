@@ -2165,9 +2165,9 @@ const DOPO_LA_FIRMA = {
   },
   privacy_url: 'https://www.iubenda.com/privacy-policy/85954225',
   fornitori: {
-    AXPO:   { attivazione: { luce: '', gas: '' }, come_si_firma: '', documenti: '', recesso: { fisso: '', variabile: '' }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: '', prima_bolletta: '' },
-    PULSEE: { attivazione: { luce: '', gas: '' }, come_si_firma: '', documenti: '', recesso: { fisso: '', variabile: '' }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: '', prima_bolletta: '' },
-    ENGAS:  { attivazione: { luce: '', gas: '' }, come_si_firma: '', documenti: '', recesso: { fisso: '', variabile: '' }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: '', prima_bolletta: '' }
+    AXPO:   { attivazione: { luce: '', gas: '' }, come_si_firma: "Ricevi via email la copia del contratto da firmare. Dal link nella mail apri il contratto, chiedi il codice OTP, lo inserisci e la firma è completata.", documenti: '', recesso: { fisso: '', variabile: "L'offerta variabile non ha scadenza." }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: "La bolletta ti arriva da Axpo, non dall'agenzia.", prima_bolletta: '' },
+    PULSEE: { attivazione: { luce: '', gas: '' }, come_si_firma: "Ricevi via email la copia del contratto da firmare. Dal link nella mail apri il contratto, chiedi il codice OTP, lo inserisci e la firma è completata.", documenti: '', recesso: { fisso: '', variabile: "L'offerta variabile non ha scadenza." }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: "La bolletta ti arriva da Pulsee, non dall'agenzia.", prima_bolletta: '' },
+    ENGAS:  { attivazione: { luce: '', gas: '' }, come_si_firma: "Ricevi via email la copia del contratto da firmare. Dal link nella mail apri il contratto, chiedi il codice OTP, lo inserisci e la firma è completata.", documenti: '', recesso: { fisso: '', variabile: "L'offerta variabile non ha scadenza." }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: "La bolletta ti arriva da Engas, non dall'agenzia.", prima_bolletta: '' }
   }
 };
 const DLF_AGENZIA = {
@@ -2199,6 +2199,23 @@ function dopoLaFirmaMancanti() {
   if (!String(DOPO_LA_FIRMA.contatti.whatsapp || '').trim()) out.push('Contatti — numero WhatsApp del negozio');
   return out;
 }
+function dlfPrimaBolletta(s) {
+  // Luce: sempre mensile. Gas Axpo: mensile. Gas Pulsee/Engas: mensile da novembre ad aprile, bimestrale
+  // maggio-giugno, luglio-agosto, settembre-ottobre. La bolletta esce il mese dopo la chiusura del periodo.
+  const d = s.dataInizio; if (!d) return '';
+  const m = d.getMonth(), anno = d.getFullYear();
+  let meseBolletta, descr;
+  if (s.c === 'luce' || s.forn === 'AXPO') {
+    meseBolletta = m + 1;
+    descr = (s.c === 'luce' ? 'La luce si fattura ogni mese.' : 'Il gas Axpo si fattura ogni mese.');
+  } else {
+    descr = 'Il gas si fattura ogni mese da novembre ad aprile e ogni due mesi da maggio a ottobre.';
+    meseBolletta = (m >= 4 && m <= 9) ? ((m % 2 === 0 ? m + 1 : m) + 1) : m + 1;
+  }
+  return descr + ' La prima bolletta arriva a ' + new Date(anno, meseBolletta, 1).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }) + '.';
+}
+const DLF_RIPENSAMENTO = 'Il diritto di ripensamento non si applica, perché il nostro negozio è un locale commerciale del fornitore.';
+const DLF_RECESSO_MT = 'Per la Media Tensione valgono le norme della Media Tensione.';
 function dlfPagina(scelte, inizio) {
   const nomeForn = f => f.charAt(0) + f.slice(1).toLowerCase();
   const etichetta = s => scelte.length > 1 ? `<strong>${s.C} ${nomeForn(s.forn)}</strong> — ` : '';
@@ -2220,7 +2237,7 @@ function dlfPagina(scelte, inizio) {
         <li style="margin-bottom:3px;">È una stima basata sui dati di mercato di oggi e sulle bollette che ci hai portato. Non è una garanzia.</li>${ariFisso}
       </ul></div>`;
   // 2) cosa succede dopo la firma
-  const s2 = sez('Cosa succede dopo la firma', perScelta('attivazione').concat([DLF_AGENZIA.nous, DLF_AGENZIA.controllo]));
+  const s2 = sez('Cosa succede dopo la firma', scelte.map(s => { const v = dlfVal(s.forn, 'attivazione', s); return (s.inizioTesto || v) ? etichetta(s) + (s.inizioTesto ? 'La fornitura parte dal ' + s.inizioTesto + '.' : '') + (v ? ' ' + v : '') : ''; }).filter(Boolean).concat([DLF_AGENZIA.nous, DLF_AGENZIA.controllo]));
   // 3) come si firma e cosa serve
   const rFirma = [];
   const visti3 = new Set();
@@ -2234,19 +2251,21 @@ function dlfPagina(scelte, inizio) {
   scelte.forEach(s => {
     const parti = [];
     if (s.tipo === 'fisso' && s.durata) parti.push(`Il prezzo resta fisso per ${s.durata} mesi.`);
+    if (s.tipo === 'fisso' && s.indiceDopo) parti.push('Alla scadenza passa a un prezzo indicizzato (' + s.indiceDopo + ') più uno spread.');
     if (s.tipo === 'variabile') { const v = dlfVal(s.forn, 'durata', s); if (v) parti.push(v); }
     if (s.tipo === 'fisso') { const v = dlfVal(s.forn, 'scadenza_fisso', s); if (v) parti.push(v); }
     if (parti.length) r4.push(etichetta(s) + parti.join(' '));
   });
   const s4 = sez('Quanto dura e cosa succede alla scadenza', r4);
   // 5) recesso
-  const s5 = sez('Se vuoi uscire prima', perScelta('recesso'));
+  const s5 = sez('Se vuoi uscire prima', scelte.map(s => { const v = s.mt ? DLF_RECESSO_MT : (s.uscita || dlfVal(s.forn, 'recesso', s)); return v ? etichetta(s) + v : ''; }).filter(Boolean).concat(scelte.length ? [DLF_RIPENSAMENTO] : []));
   // 6) costi e bollette
   const r6 = []; const visti6 = new Set();
   scelte.forEach(s => { if (visti6.has(s.forn)) return; visti6.add(s.forn);
     const f = dlfVal(s.forn, 'chi_fattura', s), b = dlfVal(s.forn, 'prima_bolletta', s), p = scelte.length > 1 ? `<strong>${nomeForn(s.forn)}</strong> — ` : '';
     if (f) r6.push(p + '<strong>Chi fattura:</strong> ' + f);
     if (b) r6.push(p + b); });
+  scelte.forEach(s => { const pb = dlfPrimaBolletta(s); if (pb) r6.push(etichetta(s) + pb); });
   const s6 = sez('Costi e bollette', r6);
   // 7) a chi scrivere (solo se c'è il numero)
   const wa = String(DOPO_LA_FIRMA.contatti.whatsapp || '').trim();
@@ -2271,7 +2290,10 @@ function dlfPagina(scelte, inizio) {
 
 function costruisciDopoLaFirmaHtmlSito(dati, attive) {
   const segmento = state.tipo_cliente === 'Azienda' ? 'azienda' : 'privato';
-  const scelte = attive.map(cm => { const pr = dati[cm], o = pr.offerta; return { c: cm, C: cm === 'luce' ? 'Luce' : 'Gas', forn: String(o.fornitore || '').toUpperCase(), tipo: pr.isFissa ? 'fisso' : 'variabile', durata: o.durata_mesi || null, segmento }; });
+  const uscitaSito = (pr, o) => !pr.isFissa ? '' : (o.vincolo
+    ? "Se esci prima della scadenza è previsto l'Onere di recesso anticipato. Si applica esclusivamente in caso di cambio fornitore. Il cambio piano con lo stesso operatore è sempre consentito, senza alcuna penale." + (o.nota_uscita ? ' ' + o.nota_uscita : '')
+    : 'Nessun onere di recesso anticipato.' + (o.nota_uscita ? ' ' + o.nota_uscita : ''));
+  const scelte = attive.map(cm => { const pr = dati[cm], o = pr.offerta; return { c: cm, C: cm === 'luce' ? 'Luce' : 'Gas', forn: String(o.fornitore || '').toUpperCase(), tipo: pr.isFissa ? 'fisso' : 'variabile', durata: o.durata_mesi || null, segmento, uscita: uscitaSito(pr, o), indiceDopo: pr.isFissa ? (o.indice_dopo || null) : null, dataInizio: getMeseInizioFornitura(cm), inizioTesto: testoDataInizio(getMeseInizioFornitura(cm)), mt: false }; });
   return dlfPagina(scelte, 'Cambiare fornitore');
 }
 
