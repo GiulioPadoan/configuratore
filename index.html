@@ -2214,6 +2214,7 @@ function dlfPrimaBolletta(s) {
   }
   return descr + ' La prima bolletta arriva a ' + new Date(anno, meseBolletta, 1).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }) + '.';
 }
+const DLF_CONTINUITA = 'Durante il passaggio non resti mai senza luce o gas.';
 const DLF_RIPENSAMENTO = 'Il diritto di ripensamento non si applica, perché il nostro negozio è un locale commerciale del fornitore.';
 const DLF_RECESSO_MT = 'Per la Media Tensione valgono le norme della Media Tensione.';
 function dlfPagina(scelte, inizio) {
@@ -2237,7 +2238,7 @@ function dlfPagina(scelte, inizio) {
         <li style="margin-bottom:3px;">È una stima basata sui dati di mercato di oggi e sulle bollette che ci hai portato. Non è una garanzia.</li>${ariFisso}
       </ul></div>`;
   // 2) cosa succede dopo la firma
-  const s2 = sez('Cosa succede dopo la firma', scelte.map(s => { const v = dlfVal(s.forn, 'attivazione', s); return (s.inizioTesto || v) ? etichetta(s) + (s.inizioTesto ? 'La fornitura parte dal ' + s.inizioTesto + '.' : '') + (v ? ' ' + v : '') : ''; }).filter(Boolean).concat([DLF_AGENZIA.nous, DLF_AGENZIA.controllo]));
+  const s2 = sez('Cosa succede dopo la firma', scelte.map(s => { const v = dlfVal(s.forn, 'attivazione', s); return (s.inizioTesto || v) ? etichetta(s) + (s.inizioTesto ? 'La fornitura parte dal ' + s.inizioTesto + '.' : '') + (v ? ' ' + v : '') : ''; }).filter(Boolean).concat([DLF_CONTINUITA, DLF_AGENZIA.nous, DLF_AGENZIA.controllo]));
   // 3) come si firma e cosa serve
   const rFirma = [];
   const visti3 = new Set();
