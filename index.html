@@ -2217,7 +2217,15 @@ function dlfPrimaBolletta(s) {
 const DLF_CONTINUITA = 'Durante il passaggio non resti mai senza luce o gas.';
 const DLF_RIPENSAMENTO = 'Il diritto di ripensamento non si applica, perché il nostro negozio è un locale commerciale del fornitore.';
 const DLF_RECESSO_MT = 'Per la Media Tensione valgono le norme della Media Tensione.';
-function dlfPagina(scelte, inizio) {
+// Documenti da chiedere al cliente: quelli di RichiestaDocumenti.gs (CRM). Non dipendono dal mandante ma dalla pratica
+// e dal tipo di cliente. Per ora solo cambio fornitore (switch): base + bolletta di ogni punto.
+function dlfDocumentiTesto(segmento, conLuce) {
+  let t = "Servono documento d'identità, codice fiscale, numero di telefono ed email. Per pagare le bollette con addebito serve l'IBAN; se preferisci il bollettino MAV non serve.";
+  if (segmento === 'azienda') t += ' Per l\'azienda serve anche la visura camerale.';
+  else if (conLuce) t += ' Per la luce ci dici se il contatore è nella casa dove hai la residenza o no.';
+  return t + ' Per ogni punto di fornitura serve la bolletta.';
+}
+function dlfPagina(scelte, inizio, documenti) {
   const nomeForn = f => f.charAt(0) + f.slice(1).toLowerCase();
   const etichetta = s => scelte.length > 1 ? `<strong>${s.C} ${nomeForn(s.forn)}</strong> — ` : '';
   const sez = (titolo, righe, extra) => righe.length === 0 ? '' : `<div style="margin-bottom:12px;break-inside:avoid;page-break-inside:avoid;">
@@ -2246,7 +2254,7 @@ function dlfPagina(scelte, inizio) {
     const a = dlfVal(s.forn, 'come_si_firma', s), d = dlfVal(s.forn, 'documenti', s), p = scelte.length > 1 ? `<strong>${nomeForn(s.forn)}</strong> — ` : '';
     if (a) rFirma.push(p + '<strong>Come si firma:</strong> ' + a);
     if (d) rFirma.push(p + '<strong>Cosa serve:</strong> ' + d); });
-  const s3 = sez('Come si firma e cosa serve', [DLF_AGENZIA.analisi, DLF_AGENZIA.condizioni].concat(rFirma));
+  const s3 = sez('Come si firma e cosa serve', [DLF_AGENZIA.analisi, DLF_AGENZIA.condizioni].concat(rFirma).concat(documenti ? ['<strong>Cosa serve:</strong> ' + documenti] : []));
   // 4) durata e vincolo
   const r4 = [];
   scelte.forEach(s => {
@@ -2295,7 +2303,7 @@ function costruisciDopoLaFirmaHtmlSito(dati, attive) {
     ? "Se esci prima della scadenza è previsto l'Onere di recesso anticipato. Si applica esclusivamente in caso di cambio fornitore. Il cambio piano con lo stesso operatore è sempre consentito, senza alcuna penale." + (o.nota_uscita ? ' ' + o.nota_uscita : '')
     : 'Nessun onere di recesso anticipato.' + (o.nota_uscita ? ' ' + o.nota_uscita : ''));
   const scelte = attive.map(cm => { const pr = dati[cm], o = pr.offerta; return { c: cm, C: cm === 'luce' ? 'Luce' : 'Gas', forn: String(o.fornitore || '').toUpperCase(), tipo: pr.isFissa ? 'fisso' : 'variabile', durata: o.durata_mesi || null, segmento, uscita: uscitaSito(pr, o), indiceDopo: pr.isFissa ? (o.indice_dopo || null) : null, dataInizio: getMeseInizioFornitura(cm), inizioTesto: testoDataInizio(getMeseInizioFornitura(cm)), mt: false }; });
-  return dlfPagina(scelte, 'Cambiare fornitore');
+  return dlfPagina(scelte, 'Cambiare fornitore', dlfDocumentiTesto(segmento, attive.includes('luce')));
 }
 
 function costruisciRiepilogoHtml() {
