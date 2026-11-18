@@ -2148,6 +2148,133 @@ function disegnaGraficoRiepilogo(mesi, unitLabel, colore, compatto) {
   </div>`;
 }
 
+// ═══════════════════════════════════════════
+// DOPO LA FIRMA — ultima pagina del report (ver5.43, 18/11/2026)
+// Il report spiega da solo quello che oggi si dice a voce: cosa succede dopo la firma e come muoversi.
+// I testi che cambiano per fornitore / fisso o variabile / luce o gas / privato o azienda NON stanno nel
+// codice: si compilano qui sotto, come si fa con i prezzi. REGOLA: cella vuota = blocco non mostrato
+// (nessuna frase generica al posto). Niente dati interni (margini, provvigioni, prezzi di acquisto) e niente
+// spread di default dei mandanti: solo condizioni confermate dalla Scheda sintetica / dal preavviso del mandante.
+// Ogni voce può essere una stringa (vale sempre) oppure un oggetto con le chiavi che servono; si cerca in ordine:
+//   'luce.fisso' > 'luce.privato' > 'luce' > 'fisso' > 'privato' > '*'   (idem per gas, variabile, azienda)
+// ═══════════════════════════════════════════
+const DOPO_LA_FIRMA = {
+  contatti: {
+    whatsapp: '',   // [DA INSERIRE] numero WhatsApp del negozio. Vuoto = la sezione "A chi scrivere" non compare
+    chi_siamo: "Siamo Il Tuo Consulente di Fiducia, l'agenzia di Giulio Padoan e Arianna Zampieri a Santa Maria di Zevio (VR). Ti seguiamo nella scelta e nella gestione delle forniture di luce e gas."
+  },
+  privacy_url: 'https://www.iubenda.com/privacy-policy/85954225',
+  fornitori: {
+    AXPO:   { attivazione: { luce: '', gas: '' }, come_si_firma: '', documenti: '', recesso: { fisso: '', variabile: '' }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: '', prima_bolletta: '' },
+    PULSEE: { attivazione: { luce: '', gas: '' }, come_si_firma: '', documenti: '', recesso: { fisso: '', variabile: '' }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: '', prima_bolletta: '' },
+    ENGAS:  { attivazione: { luce: '', gas: '' }, come_si_firma: '', documenti: '', recesso: { fisso: '', variabile: '' }, durata: { variabile: '' }, scadenza_fisso: '', chi_fattura: '', prima_bolletta: '' }
+  }
+};
+const DLF_AGENZIA = {
+  analisi: 'Prima della firma guardiamo insieme i tuoi dati, in negozio, in sede, in videochiamata o al telefono, come preferisci.',
+  condizioni: "Prima di firmare hai davanti tutte le condizioni, comprese quelle di uscita anticipata se l'offerta è a prezzo fisso.",
+  nous: 'Ogni mese ricevi Nous: cosa cambia nel mercato e cosa ci aspettiamo. Dopo la firma entri anche nella community dei clienti, senza obbligo.',
+  controllo: "Ogni settimana confrontiamo il tuo prezzo con le altre nostre offerte e ti scriviamo noi quando troviamo un'offerta più economica di almeno il 15%. Se hai il fisso, il prezzo resta bloccato per tutta la durata e le condizioni di uscita le conosci dalla firma. Ogni anno facciamo anche un check-in.",
+  chiusura: 'Nessuna fretta, decidi quando ti senti pronto.'
+};
+const DOPO_LA_FIRMA_VOCI = { attivazione: 'Tempi di attivazione (luce / gas)', come_si_firma: 'Come si firma', documenti: 'Documenti necessari', recesso: 'Recesso: preavviso e costi (fisso / variabile)', durata: 'Durata dell\'offerta variabile', scadenza_fisso: 'Cosa succede alla scadenza del fisso', chi_fattura: 'Chi fattura', prima_bolletta: 'Quando arriva la prima bolletta e cosa cambia' };
+function dlfCerca(cfgVoce, ctx) {
+  if (typeof cfgVoce === 'string') return cfgVoce.trim();
+  if (!cfgVoce || typeof cfgVoce !== 'object') return '';
+  const ordine = [ctx.c + '.' + ctx.tipo, ctx.c + '.' + ctx.segmento, ctx.c, ctx.tipo, ctx.segmento, '*'];
+  for (const k of ordine) { const v = cfgVoce[k]; if (typeof v === 'string' && v.trim()) return v.trim(); }
+  return '';
+}
+function dlfVal(forn, voce, ctx) { const f = DOPO_LA_FIRMA.fornitori[forn]; return f ? dlfCerca(f[voce], ctx) : ''; }
+// Celle ancora vuote della tabella (per segnalarle a Giulio)
+function dopoLaFirmaMancanti() {
+  const out = [];
+  Object.entries(DOPO_LA_FIRMA.fornitori).forEach(([forn, f]) => {
+    Object.keys(DOPO_LA_FIRMA_VOCI).forEach(voce => {
+      const v = f[voce];
+      if (v && typeof v === 'object') Object.entries(v).forEach(([k, x]) => { if (!String(x || '').trim()) out.push(forn + ' — ' + DOPO_LA_FIRMA_VOCI[voce] + ' [' + k + ']'); });
+      else if (!String(v || '').trim()) out.push(forn + ' — ' + DOPO_LA_FIRMA_VOCI[voce]);
+    });
+  });
+  if (!String(DOPO_LA_FIRMA.contatti.whatsapp || '').trim()) out.push('Contatti — numero WhatsApp del negozio');
+  return out;
+}
+function dlfPagina(scelte, inizio) {
+  const nomeForn = f => f.charAt(0) + f.slice(1).toLowerCase();
+  const etichetta = s => scelte.length > 1 ? `<strong>${s.C} ${nomeForn(s.forn)}</strong> — ` : '';
+  const sez = (titolo, righe, extra) => righe.length === 0 ? '' : `<div style="margin-bottom:12px;break-inside:avoid;page-break-inside:avoid;">
+      <h3 style="font-size:.98rem;color:#0f172a;margin:0 0 5px;">${titolo}</h3>
+      <ul style="margin:0;padding-left:18px;font-size:.84rem;line-height:1.5;color:#334155;">${righe.map(r => `<li style="margin-bottom:3px;">${r}</li>`).join('')}</ul>${extra || ''}
+    </div>`;
+  const perForn = voce => { const visti = new Set(), r = []; scelte.forEach(s => { if (visti.has(s.forn)) return; visti.add(s.forn); const v = dlfVal(s.forn, voce, s); if (v) r.push((scelte.length > 1 ? `<strong>${nomeForn(s.forn)}</strong> — ` : '') + v); }); return r; };
+  const perScelta = (voce, pre) => scelte.map(s => { const v = dlfVal(s.forn, voce, s); return v ? etichetta(s) + (pre ? pre(s) : '') + v : ''; }).filter(Boolean);
+
+  // 1) come leggere questa simulazione (sempre presente: non dipende dal mandante)
+  const ariFisso = scelte.some(s => s.c === 'luce' && s.tipo === 'fisso')
+    ? '<li style="margin-bottom:3px;">Per la luce, il prezzo fisso può risultare più basso o più alto dei corrispettivi variabili.</li>' : '';
+  const s1 = `<div style="margin-bottom:12px;break-inside:avoid;page-break-inside:avoid;">
+      <h3 style="font-size:.98rem;color:#0f172a;margin:0 0 5px;">Come leggere questa simulazione</h3>
+      <ul style="margin:0;padding-left:18px;font-size:.84rem;line-height:1.5;color:#334155;">
+        <li style="margin-bottom:3px;">Abbiamo confrontato il prezzo dell'energia e del gas che paghi oggi con quello delle offerte indicate, sui consumi delle tue bollette, più la quota fissa.</li>
+        <li style="margin-bottom:3px;">Non sono confrontati oneri di sistema, trasporto, imposte e IVA.</li>
+        <li style="margin-bottom:3px;">È una stima basata sui dati di mercato di oggi e sulle bollette che ci hai portato. Non è una garanzia.</li>${ariFisso}
+      </ul></div>`;
+  // 2) cosa succede dopo la firma
+  const s2 = sez('Cosa succede dopo la firma', perScelta('attivazione').concat([DLF_AGENZIA.nous, DLF_AGENZIA.controllo]));
+  // 3) come si firma e cosa serve
+  const rFirma = [];
+  const visti3 = new Set();
+  scelte.forEach(s => { if (visti3.has(s.forn)) return; visti3.add(s.forn);
+    const a = dlfVal(s.forn, 'come_si_firma', s), d = dlfVal(s.forn, 'documenti', s), p = scelte.length > 1 ? `<strong>${nomeForn(s.forn)}</strong> — ` : '';
+    if (a) rFirma.push(p + '<strong>Come si firma:</strong> ' + a);
+    if (d) rFirma.push(p + '<strong>Cosa serve:</strong> ' + d); });
+  const s3 = sez('Come si firma e cosa serve', [DLF_AGENZIA.analisi, DLF_AGENZIA.condizioni].concat(rFirma));
+  // 4) durata e vincolo
+  const r4 = [];
+  scelte.forEach(s => {
+    const parti = [];
+    if (s.tipo === 'fisso' && s.durata) parti.push(`Il prezzo resta fisso per ${s.durata} mesi.`);
+    if (s.tipo === 'variabile') { const v = dlfVal(s.forn, 'durata', s); if (v) parti.push(v); }
+    if (s.tipo === 'fisso') { const v = dlfVal(s.forn, 'scadenza_fisso', s); if (v) parti.push(v); }
+    if (parti.length) r4.push(etichetta(s) + parti.join(' '));
+  });
+  const s4 = sez('Quanto dura e cosa succede alla scadenza', r4);
+  // 5) recesso
+  const s5 = sez('Se vuoi uscire prima', perScelta('recesso'));
+  // 6) costi e bollette
+  const r6 = []; const visti6 = new Set();
+  scelte.forEach(s => { if (visti6.has(s.forn)) return; visti6.add(s.forn);
+    const f = dlfVal(s.forn, 'chi_fattura', s), b = dlfVal(s.forn, 'prima_bolletta', s), p = scelte.length > 1 ? `<strong>${nomeForn(s.forn)}</strong> — ` : '';
+    if (f) r6.push(p + '<strong>Chi fattura:</strong> ' + f);
+    if (b) r6.push(p + b); });
+  const s6 = sez('Costi e bollette', r6);
+  // 7) a chi scrivere (solo se c'è il numero)
+  const wa = String(DOPO_LA_FIRMA.contatti.whatsapp || '').trim();
+  const s7 = wa ? `<div style="margin-bottom:12px;break-inside:avoid;page-break-inside:avoid;">
+      <h3 style="font-size:.98rem;color:#0f172a;margin:0 0 5px;">A chi scrivere</h3>
+      <p style="margin:0 0 4px;font-size:.84rem;line-height:1.5;color:#334155;">Per qualsiasi dubbio scrivici su WhatsApp al numero del negozio: <strong>${wa}</strong>.</p>
+      ${DOPO_LA_FIRMA.contatti.chi_siamo ? `<p style="margin:0;font-size:.84rem;line-height:1.5;color:#334155;">${DOPO_LA_FIRMA.contatti.chi_siamo}</p>` : ''}
+    </div>` : '';
+  // 8) dati e privacy (sempre presente)
+  const s8 = `<div style="margin-bottom:0;break-inside:avoid;page-break-inside:avoid;">
+      <h3 style="font-size:.98rem;color:#0f172a;margin:0 0 5px;">I tuoi dati</h3>
+      <p style="margin:0;font-size:.84rem;line-height:1.5;color:#334155;">Come trattiamo i tuoi dati lo trovi nella privacy policy: <a href="${DOPO_LA_FIRMA.privacy_url}" style="color:#2563eb;">${DOPO_LA_FIRMA.privacy_url}</a></p>
+    </div>`;
+  return `<div class="dopo-firma" style="break-before:page;page-break-before:always;">
+    <h2 class="tit-pag">Dopo la firma</h2>
+    <p style="font-size:.9rem;color:#334155;line-height:1.55;margin:0 0 10px;">${inizio} è solo l'inizio. Qui trovi cosa succede dopo la firma, così puoi decidere con calma o parlarne in famiglia o col socio.</p>
+    ${s1}${s2}${s3}${s4}${s5}${s6}${s7}
+    <p style="font-size:.9rem;color:#334155;line-height:1.55;margin:0 0 12px;">${DLF_AGENZIA.chiusura}</p>
+    ${s8}
+  </div>`;
+}
+
+function costruisciDopoLaFirmaHtmlSito(dati, attive) {
+  const segmento = state.tipo_cliente === 'Azienda' ? 'azienda' : 'privato';
+  const scelte = attive.map(cm => { const pr = dati[cm], o = pr.offerta; return { c: cm, C: cm === 'luce' ? 'Luce' : 'Gas', forn: String(o.fornitore || '').toUpperCase(), tipo: pr.isFissa ? 'fisso' : 'variabile', durata: o.durata_mesi || null, segmento }; });
+  return dlfPagina(scelte, 'Cambiare fornitore');
+}
+
 function costruisciRiepilogoHtml() {
   const oggi = new Date();
   const dataIt = oggi.toLocaleDateString('it-IT');
@@ -2253,18 +2380,6 @@ function costruisciRiepilogoHtml() {
     ${contatti}
   </div>`;
 
-  // ── Cosa succede dopo (ver2.25) ──
-  const faseDopo = (n, titolo, testo) => `<div style="display:flex;gap:14px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #e2e8f0;break-inside:avoid;page-break-inside:avoid;"><div style="flex:none;width:30px;height:30px;border-radius:50%;background:#2563eb;color:#fff;font-weight:700;text-align:center;line-height:30px;font-size:.95rem;">${n}</div><div><div style="font-weight:700;color:#0f172a;font-size:.98rem;">${titolo}</div><div style="color:#334155;font-size:.88rem;line-height:1.55;margin-top:2px;">${testo}</div></div></div>`;
-  const paginaDopo = `<div class="pag">
-    <h2 style="margin:0 0 8px;font-size:1.25rem;color:#0f172a;">Cosa succede dopo</h2>
-    <p style="font-size:.92rem;color:#334155;line-height:1.6;margin:0 0 12px;">Cambiare fornitore è solo l'inizio. Qui trovi cosa succede dopo, così puoi decidere con calma o parlarne in famiglia o col socio.</p>
-    ${faseDopo(1, 'Analisi della bolletta', 'Guardiamo insieme i tuoi dati, in negozio, in sede, in videochiamata o al telefono, come preferisci.')}
-    ${faseDopo(2, 'Firma', 'Prima di firmare hai davanti tutte le condizioni, comprese quelle di uscita anticipata se l\'offerta è a prezzo fisso.')}
-    ${faseDopo(3, 'Nous ogni mese', 'Ricevi cosa cambia nel mercato e cosa ci aspettiamo. Dopo la firma entri anche nella community dei clienti, senza obbligo.')}
-    ${faseDopo(4, 'Controllo dell\'offerta', 'Ogni settimana confrontiamo il tuo prezzo con le altre nostre offerte e ti scriviamo noi quando troviamo un\'offerta più economica di almeno il 15%. Se hai il fisso, il prezzo resta bloccato per tutta la durata e le condizioni di uscita le conosci dalla firma. Ogni anno facciamo anche un check-in.')}
-    <p style="font-size:.92rem;color:#334155;line-height:1.6;margin:14px 0 0;">Nessuna fretta, decidi quando ti senti pronto.</p>
-  </div>`;
-
   // ── allegati tecnici ──
   const tbl = (titolo, righe) => `<table class="rt"><thead><tr><th colspan="2">${titolo}</th></tr></thead><tbody>${righe.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table>`;
   const cum = (pr, n) => sommaMesi(pr, 0, n);
@@ -2354,9 +2469,9 @@ function costruisciRiepilogoHtml() {
     <div style="font-size:.66rem;color:#64748b;line-height:1.5;border-top:1px solid #e2e8f0;padding-top:6px;margin-top:4px;">Stima non vincolante, calcolata con i dati di mercato disponibili al ${dataIt} e nell'ipotesi che consumi e condizioni di partenza restino invariati. Riguarda solo la spesa per la materia energia e/o gas, al netto di oneri di sistema, imposte e IVA. Il dettaglio dei calcoli e le fonti sono negli allegati tecnici. La simulazione rispecchia il codice di condotta commerciale previsto dalla delibera ARERA 189/2026/R/com.</div>
   </div>
   ${pagina3}
-  ${paginaDopo}
   <div class="pag divisorio"><div class="div-linea"></div><h2>Allegati tecnici</h2><p>Le pagine che seguono contengono i calcoli, i grafici, i dati di mercato e le note normative. Servono a chi vuole verificare ogni numero: per decidere bastano le pagine precedenti.</p></div>
   <div>${noteMet}${allegati}${fonti}</div>
+  ${costruisciDopoLaFirmaHtmlSito(dati, attive)}
 </body></html>`;
 }
 function flagRiepilogo(titolo, sotto) {
