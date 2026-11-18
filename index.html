@@ -1899,8 +1899,10 @@ function calcolaProiezioneOfferta(commodity, offertaBase) {
       if (valIndice <= 0) continue;
       energia = (valIndice + spreadOff) * moltPerdite;
     }
+    // Dispacciamento + Capacity (Azienda) sono NETTI di perdite: si moltiplicano per le perdite di rete come l'energia;
+    // il CDISPD (Privato) no. (Correzione del 18/11/2026.)
     const areraMese = !isLuce ? 0 : (state.tipo_cliente === 'Azienda'
-      ? getAreraPerMesi('dispacciamento', [row.mese]) + getAreraPerMesi('capacity_mkt', [row.mese])
+      ? (getAreraPerMesi('dispacciamento', [row.mese]) + getAreraPerMesi('capacity_mkt', [row.mese])) * moltPerdite
       : getAreraPerMesi('cdispd', [row.mese]));
     const nostro = energia + areraMese;
     let attuale;
