@@ -973,5 +973,69 @@
       "2025-T4": 0.01035,
       "2026-T2": 0.005589
     }
+  },
+  "capacity_terna": {
+    "_nota": "Capacity Market Terna per la MEDIA TENSIONE (corrispettivi art. 14 ARG/elt 98/11). Aggiornare: prezzo ore di picco ogni anno (a inizio anno, con il calendario delle 500 ore di picco), prezzo ore fuori picco ogni trimestre. ore_picco_mese = ore di picco del calendario per mese, divise in F1 (lun-ven 8-19) e F2 (lun-ven 7-8 e 19-23); per gli anni senza calendario si usa quello 2026. Interpretazione dell'ora: ora che termina (da verificare). fattore_media_nazionale = quota energia in picco Terna 2026 (9,29%) / quota ore di picco (5,71%).",
+    "anno_calendario": 2026,
+    "prezzo_picco_eur_mwh": {
+      "2026": 65.0
+    },
+    "fuori_picco_eur_mwh_trimestre": {
+      "2026-T1": 2.996,
+      "2026-T2": 3.619,
+      "2026-T3": 3.197,
+      "2026-T4": 3.423
+    },
+    "ore_picco_mese": {
+      "01": {
+        "f1": 87,
+        "f2": 7
+      },
+      "02": {
+        "f1": 53,
+        "f2": 11
+      },
+      "03": {
+        "f1": 11,
+        "f2": 1
+      },
+      "04": {
+        "f1": 0,
+        "f2": 0
+      },
+      "05": {
+        "f1": 0,
+        "f2": 0
+      },
+      "06": {
+        "f1": 18,
+        "f2": 16
+      },
+      "07": {
+        "f1": 130,
+        "f2": 82
+      },
+      "08": {
+        "f1": 16,
+        "f2": 11
+      },
+      "09": {
+        "f1": 0,
+        "f2": 0
+      },
+      "10": {
+        "f1": 0,
+        "f2": 0
+      },
+      "11": {
+        "f1": 0,
+        "f2": 0
+      },
+      "12": {
+        "f1": 50,
+        "f2": 7
+      }
+    },
+    "fattore_media_nazionale": 1.628
   }
 }
