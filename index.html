@@ -1912,7 +1912,7 @@ function calcolaProiezioneOfferta(commodity, offertaBase) {
     }
     const costoAttuale = attuale * consumoMensile + quotaFissaCliente;
     const costoNostro  = nostro * consumoMensile + offerta.pcv_anno / 12;
-    mesi.push({ mese: row.mese, differenza: costoAttuale - costoNostro, attuale, nostro });
+    mesi.push({ mese: row.mese, differenza: costoAttuale - costoNostro, attuale, nostro, costoNostro });
   }
   return { offerta, spread, consumoAnnuo, mesi, isFissa, w0 };
 }
@@ -1930,18 +1930,54 @@ function sommaMesi(pr, a, b) {
     return tot + m.differenza * peso;
   }, 0);
 }
+// Costo totale (energia + quota fissa) sui mesi di fornitura [a, b], stessa pesatura di sommaMesi.
+function sommaCosto(pr, a, b) {
+  const w0 = pr.w0 == null ? 1 : pr.w0;
+  return pr.mesi.reduce((tot, m, i) => {
+    const da = i === 0 ? 0 : w0 + i - 1, fino = i === 0 ? w0 : w0 + i;
+    const peso = Math.max(0, Math.min(b, fino) - Math.max(a, da));
+    return tot + m.costoNostro * peso;
+  }, 0);
+}
+// Regola dell'offerta indicata (ver2.38, 16/11/2026, decisione di Giulio): base = il prezzo fisso PIÙ
+// LUNGO disponibile (di norma 36 mesi). L'offerta che costa meno la sostituisce SOLO se la base costa
+// più del 15% in più di lei, sul costo TOTALE a 36 mesi (energia + quota fissa). Senza fissi idonei
+// vale l'offerta che costa meno (a parità la variabile).
+const SOGLIA_OFFERTA_INDICATA = 0.15;
 function calcolaProiezioneSito(commodity) {
   const consumoAnnuo = parseFloat(state[commodity + '_consumo_annuo']);
   if (isNaN(consumoAnnuo)) return null;
   const candidate = [getOffertaRiferimento(commodity, consumoAnnuo)].concat(getFissiCandidati(commodity, consumoAnnuo));
-  let migliore = null;
+  const lista = [];
   candidate.forEach(o => {
     const pr = calcolaProiezioneOfferta(commodity, o);
     if (!pr || pr.mesi.length === 0) return;
     pr.tot36 = sommaMesi(pr, 0, 36);
-    if (!migliore || pr.tot36 > migliore.tot36 + 0.005) migliore = pr;
+    pr.costo36 = sommaCosto(pr, 0, 36);
+    lista.push(pr);
   });
-  return migliore;
+  if (lista.length === 0) return null;
+  let cheapest = null;
+  lista.forEach(pr => { if (!cheapest || pr.tot36 > cheapest.tot36 + 0.005) cheapest = pr; });
+  let base = null;
+  lista.filter(pr => pr.isFissa).forEach(pr => {
+    const dB = base ? (base.offerta.durata_mesi || 0) : -1, dP = pr.offerta.durata_mesi || 0;
+    if (!base || dP > dB || (dP === dB && pr.tot36 > base.tot36)) base = pr;
+  });
+  let best = cheapest;
+  if (base && base !== cheapest && !(base.costo36 > cheapest.costo36 * (1 + SOGLIA_OFFERTA_INDICATA))) best = base;
+  best.perTranquillita = best !== cheapest;
+  best.altExtra = best.perTranquillita ? best.costo36 - cheapest.costo36 : null;
+  best.altTipoFissa = best.perTranquillita ? cheapest.isFissa : null;
+  best.altNome = best.perTranquillita ? cheapest.offerta.nome : null;
+  return best;
+}
+// Frase sul costo dell'alternativa più economica, quando l'indicazione è il prezzo fisso (stessa del Qualifica).
+function fraseAlternativa(pr, eurFmt) {
+  if (!pr || !pr.perTranquillita || pr.altExtra == null || pr.altExtra <= 0) return '';
+  return pr.altTipoFissa
+    ? `L'offerta ${pr.altNome} (prezzo fisso) costa circa ${eurFmt(pr.altExtra)} in meno nei 36 mesi.`
+    : `Oggi il prezzo variabile costa circa ${eurFmt(pr.altExtra)} in meno nei 36 mesi, ma segue il mercato e non sai in anticipo quanto pagherai.`;
 }
 function calcolaRisparmioSito(commodity, nMesi) {
   const pr = calcolaProiezioneSito(commodity);
@@ -2018,6 +2054,7 @@ function mostraRisparmioStimatoInterno() {
       ${(convenzione && !o.convenzione) ? `<div class="risultato-dettaglio">Convenzione ${convenzione.nome}: condizioni non applicabili ai consumi indicati, confronto con l'offerta standard.</div>` : ''}
       ${validitaHtml}
       <div class="risultato-dettaglio">${dettaglioPrezzo} · quota fissa ${o.pcv_anno.toFixed(0)} €/anno (${(o.pcv_anno/12).toFixed(2).replace('.', ',')} €/mese)</div>
+      ${fraseAlternativa(pr, eur) ? `<div class="risultato-dettaglio">${fraseAlternativa(pr, eur)}</div>` : ''}
       ${riga('Prossimi 12 mesi', v12)}
       ${v36 !== null ? riga('Prossimi 36 mesi', v36) : ''}
       ${vincoloHtml}
@@ -2147,6 +2184,8 @@ function costruisciRiepilogoHtml() {
       const risF = sommaMesi(pr, 0, nF);
       if (risF <= 0) rigaFisso = `<div style="font-size:.88rem;color:#334155;margin:2px 0 4px;">La scelta del prezzo fisso per ${o.durata_mesi} mesi comporta un costo maggiore, rispetto all'attuale offerta, di <strong>${fmt(-risF / nF)} €/mese</strong>.</div>`;
     }
+    const testoAlt = fraseAlternativa(pr, v => fmt(v) + ' €');
+    const rigaAlt = testoAlt ? `<div style="font-size:.84rem;color:#334155;margin:2px 0 4px;">${testoAlt}</div>` : '';
     const validita = (pr.isFissa && dataValidita(o)) ? `<div style="font-size:.8rem;color:#475569;margin-top:6px;">${testoValidita(o)}.</div>` : '';
     const pcvTxt = 'Quota fissa (PCV): ' + fmtIt(o.pcv_anno, 2) + ' €/anno (' + fmtIt(o.pcv_anno / 12, 2) + ' €/mese)';
     const prezzoTxt = pr.isFissa
@@ -2163,7 +2202,7 @@ function costruisciRiepilogoHtml() {
     cards += `<div style="border:1px solid ${st.bordo}33;border-left:6px solid ${st.bordo};background:${st.sfondo};border-radius:12px;padding:10px 18px;margin-bottom:10px;break-inside:avoid;page-break-inside:avoid;">
       <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${st.et};margin-bottom:3px;">${st.emoji} ${nomeC[c]} — la nostra indicazione</div>
       <div style="font-size:1.12rem;font-weight:800;color:#0f172a;">${o.fornitore} — ${o.nome} <span style="display:inline-block;font-size:.72rem;font-weight:700;border-radius:99px;background:#fff;border:1px solid #cbd5e1;padding:2px 10px;margin-left:6px;vertical-align:middle;color:#334155;">${tipoTxt}</span></div>
-      ${conv}${rigaGrande}${rigaFisso}
+      ${conv}${rigaGrande}${rigaFisso}${rigaAlt}
       ${disegnaGraficoRiepilogo(sMesi, st.um, colore, true)}
       ${nota}${validita}
       <div style="font-size:.8rem;color:#475569;margin-top:${validita ? '2' : '6'}px;">${pcvTxt} · ${prezzoTxt}.</div>
@@ -2199,7 +2238,7 @@ function costruisciRiepilogoHtml() {
   const pagina3 = `<div class="pag">
     <h2 style="margin-top:0;color:#2563eb;font-size:1.05rem;">Prezzo fisso o prezzo variabile</h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
-      ${box('Prezzo fisso', durataTxt, ['Sai già oggi quanto pagherai per tutta la durata.', "Se il mercato sale, la tua bolletta resta dov'è."], ['Se il mercato scende non ne approfitti.', 'Resti con lo stesso fornitore per tutta la durata (' + durataTxt + ').', 'Alla scadenza il prezzo passa a indicizzato.'])}
+      ${box('Prezzo fisso', durataTxt, ["Il prezzo dell'energia resta bloccato per tutta la durata.", "Se il mercato sale, il prezzo che paghi per l'energia non cambia (oneri, trasporto e imposte restano esclusi)."], ['Se il mercato scende non ne approfitti.', 'Resti con lo stesso fornitore per tutta la durata (' + durataTxt + ').', 'Alla scadenza il prezzo passa a indicizzato.'])}
       ${box('Prezzo variabile', 'segue il mercato', ['Segui il mercato, se i prezzi scendono scende anche la tua bolletta.', 'Non hai un vincolo di durata sul prezzo.'], ['Se il mercato sale, sale anche la bolletta.', 'Non sai in anticipo quanto pagherai.'])}
     </div>
     <h2 style="margin-top:14px;color:#2563eb;font-size:1.05rem;">Tre domande per scegliere</h2>
