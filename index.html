@@ -2288,7 +2288,7 @@ function dlfPagina(scelte, inizio, documenti) {
       <h3 style="font-size:.98rem;color:#0f172a;margin:0 0 5px;">I tuoi dati</h3>
       <p style="margin:0;font-size:.84rem;line-height:1.5;color:#334155;">Come trattiamo i tuoi dati lo trovi nella privacy policy: <a href="${DOPO_LA_FIRMA.privacy_url}" style="color:#2563eb;">${DOPO_LA_FIRMA.privacy_url}</a></p>
     </div>`;
-  return `<div class="dopo-firma" style="break-before:page;page-break-before:always;">
+  return `<div class="pag dopo-firma">
     <h2 class="tit-pag">Dopo la firma</h2>
     <p style="font-size:.9rem;color:#334155;line-height:1.55;margin:0 0 10px;">${inizio} è solo l'inizio. Qui trovi cosa succede dopo la firma, così puoi decidere con calma o parlarne in famiglia o col socio.</p>
     ${s1}${s2}${s3}${s4}${s5}${s6}${s7}
@@ -2406,10 +2406,15 @@ function costruisciRiepilogoHtml() {
     ${riga(2, 'Preferisci bloccare il prezzo e restare con lo stesso fornitore per ' + durataTxt + ', anche se il mercato dovesse scendere?')}
     ${riga(3, 'Pensi di restare ' + dove + ' e con consumi simili per almeno 2-3 anni?')}
     <div style="background:#fef9ec;border:1px solid #f0d898;border-radius:8px;padding:9px 14px;font-size:.8rem;color:#1e293b;line-height:1.5;margin:10px 0 14px;"><strong>Come leggerle.</strong> Tre Sì, probabilmente ti conviene il fisso. Almeno un No, il variabile. Se la terza è No, evita in ogni caso i fissi lunghi. Se le risposte non coincidono con la nostra indicazione, ne parliamo insieme in consulenza.</div>
-    <h2 style="margin-top:14px;color:#2563eb;font-size:1.05rem;">Il servizio che ottieni con la nostra Agenzia</h2>
-    ${serviziHtml}
+  </div>`;
+  const paginaServizio = `<div class="pag">
+    <h2 style="margin:0 0 4px;font-size:1.25rem;color:#0f172a;">Il servizio che ottieni con la nostra Agenzia</h2>
+    ${siK.length
+      ? `<div style="display:flex;flex-direction:column;gap:12px;margin:10px 0 22px;">${siK.map(k => `<div style="display:flex;gap:14px;align-items:flex-start;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;background:#f8fafc;break-inside:avoid;page-break-inside:avoid;"><div style="flex:none;font-size:1.7rem;line-height:1.2;">${SERV[k][0]}</div><div><div style="font-weight:700;color:#0f172a;font-size:1rem;">${SERV[k][1]}</div><div style="color:#475569;font-size:.88rem;line-height:1.5;margin-top:2px;">${SERV[k][2]}</div></div></div>`).join('')}</div>`
+      : '<p style="font-size:.95rem;color:#475569;margin:10px 0 22px;">Un referente dedicato ti segue in ogni fase, con assistenza continua della nostra Agenzia.</p>'}
     ${contatti}
   </div>`;
+  const paginaStaccoDopo = `<div class="pag divisorio"><div class="div-linea"></div><h2>E dopo la firma?</h2><p>Cosa succede dopo, come si firma e a chi scrivere.</p></div>`;
 
   // ── allegati tecnici ──
   const tbl = (titolo, righe) => `<table class="rt"><thead><tr><th colspan="2">${titolo}</th></tr></thead><tbody>${righe.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table>`;
@@ -2454,7 +2459,8 @@ function costruisciRiepilogoHtml() {
 <style>
   @page { size: A4; margin: 12mm 14mm; }
   @page dark { size: A4; margin: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 820px; margin: 0 auto; padding: 20px 24px; color: #1e293b; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html { color-scheme: light; }
+  body { background: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 820px; margin: 0 auto; padding: 20px 24px; color: #1e293b; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   h2 { break-after: avoid; page-break-after: avoid; }
   .pag { break-after: page; page-break-after: always; }
   .cop { display: flex; flex-direction: column; min-height: 24.5cm; }
@@ -2500,9 +2506,11 @@ function costruisciRiepilogoHtml() {
     <div style="font-size:.66rem;color:#64748b;line-height:1.5;border-top:1px solid #e2e8f0;padding-top:6px;margin-top:4px;">Stima non vincolante, calcolata con i dati di mercato disponibili al ${dataIt} e nell'ipotesi che consumi e condizioni di partenza restino invariati. Riguarda solo la spesa per la materia energia e/o gas, al netto di oneri di sistema, imposte e IVA. Il dettaglio dei calcoli e le fonti sono negli allegati tecnici. La simulazione rispecchia il codice di condotta commerciale previsto dalla delibera ARERA 189/2026/R/com.</div>
   </div>
   ${pagina3}
+  ${paginaServizio}
+  ${paginaStaccoDopo}
+  ${costruisciDopoLaFirmaHtmlSito(dati, attive)}
   <div class="pag divisorio"><div class="div-linea"></div><h2>Allegati tecnici</h2><p>Le pagine che seguono contengono i calcoli, i grafici, i dati di mercato e le note normative. Servono a chi vuole verificare ogni numero: per decidere bastano le pagine precedenti.</p></div>
   <div>${noteMet}${allegati}${fonti}</div>
-  ${costruisciDopoLaFirmaHtmlSito(dati, attive)}
 </body></html>`;
 }
 function flagRiepilogo(titolo, sotto) {
