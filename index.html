@@ -1914,7 +1914,7 @@ function calcolaProiezioneOfferta(commodity, offertaBase) {
     }
     const costoAttuale = attuale * consumoMensile + quotaFissaCliente;
     const costoNostro  = nostro * consumoMensile + offerta.pcv_anno / 12;
-    mesi.push({ mese: row.mese, differenza: costoAttuale - costoNostro, attuale, nostro, costoNostro });
+    mesi.push({ mese: row.mese, differenza: costoAttuale - costoNostro, attuale, nostro, costoNostro, costoAttuale });
   }
   return { offerta, spread, consumoAnnuo, mesi, isFissa, w0 };
 }
@@ -1941,11 +1941,37 @@ function sommaCosto(pr, a, b) {
     return tot + m.costoNostro * peso;
   }, 0);
 }
-// Regola dell'offerta indicata (ver2.38, 16/11/2026, decisione di Giulio): base = il prezzo fisso PIÙ
-// LUNGO disponibile (di norma 36 mesi). L'offerta che costa meno la sostituisce SOLO se la base costa
-// più del 15% in più di lei, sul costo TOTALE a 36 mesi (energia + quota fissa). Senza fissi idonei
-// vale l'offerta che costa meno (a parità la variabile).
-const SOGLIA_OFFERTA_INDICATA = 0.15;
+// Regola dell'offerta indicata (19/11/2026, decisione di Giulio): base = la VARIABILE (che costa meno sui 36 mesi).
+// Un'offerta a prezzo fisso viene indicata solo se, sul PERIODO DEL FISSO (12/24/36 mesi), costa meno della variabile di
+// oltre il 10% del costo totale della variabile in quel periodo; fra più fissi vince il più lungo. Senza variabile vale l'offerta che costa meno.
+const SOGLIA_OFFERTA_INDICATA = 0.10;
+// Costo di quello che il cliente paga oggi, sulla stessa proiezione (per la tabella di confronto negli allegati).
+function sommaCostoAttuale(pr, a, b) {
+  const w0 = pr.w0 == null ? 1 : pr.w0;
+  return pr.mesi.reduce((tot, m, i) => {
+    const da = i === 0 ? 0 : w0 + i - 1, fino = i === 0 ? w0 : w0 + i;
+    const peso = Math.max(0, Math.min(b, fino) - Math.max(a, da));
+    return tot + m.costoAttuale * peso;
+  }, 0);
+}
+// Tabella di confronto negli allegati (19/11/2026): una riga per offerta, spesa dei tre anni e totale a 36 mesi.
+function tabellaConfrontoSito(pr, c) {
+  const euro = v => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
+  const anni = (fn) => { const c12 = fn(0, 12), c24 = fn(0, 24), c36 = fn(0, 36); return [c12, c24 - c12, c36 - c24, c36]; };
+  const righe = [{ nome: 'Il tuo prezzo di oggi', v: anni((a, b) => sommaCostoAttuale(pr, a, b)), attuale: true }];
+  (pr.tutte || [pr]).forEach(p => {
+    const o = p.offerta;
+    const tipoTxt = p.isFissa ? 'prezzo fisso, ' + o.durata_mesi + ' mesi' : 'prezzo variabile';
+    righe.push({ nome: o.fornitore + ' — ' + o.nome + ' (' + tipoTxt + ')', v: anni((a, b) => sommaCosto(p, a, b)) });
+  });
+  const celle = v => v.map((x, i) => `<td style="text-align:right;white-space:nowrap;${i === 3 ? 'font-weight:700;' : ''}">${euro(x)}</td>`).join('');
+  return `<div style="margin:6px 0 14px;break-inside:avoid;page-break-inside:avoid;">
+    <h3 style="font-size:.98rem;color:#0f172a;margin:0 0 6px;">Confronto delle offerte: spesa nei prossimi 36 mesi</h3>
+    <table class="rt" style="margin:0;"><thead><tr><th style="text-align:left;">Offerta</th><th style="text-align:right;">Anno 1</th><th style="text-align:right;">Anno 2</th><th style="text-align:right;">Anno 3</th><th style="text-align:right;">Totale 36 mesi</th></tr></thead>
+    <tbody>${righe.map(r => `<tr${r.attuale ? ' style="background:#f1f5f9;"' : ''}><td style="text-align:left;font-weight:400;">${r.nome}</td>${celle(r.v)}</tr>`).join('')}</tbody></table>
+    <div style="font-size:.7rem;color:#64748b;line-height:1.5;margin-top:5px;">Spesa per la materia ${c === 'luce' ? 'energia' : 'gas'} e la quota fissa, sui dati di mercato di oggi; al netto di oneri di sistema, trasporto, imposte e IVA. Dal secondo anno in poi sono stime.</div>
+  </div>`;
+}
 function calcolaProiezioneSito(commodity) {
   const consumoAnnuo = parseFloat(state[commodity + '_consumo_annuo']);
   if (isNaN(consumoAnnuo)) return null;
@@ -1961,13 +1987,21 @@ function calcolaProiezioneSito(commodity) {
   if (lista.length === 0) return null;
   let cheapest = null;
   lista.forEach(pr => { if (!cheapest || pr.tot36 > cheapest.tot36 + 0.005) cheapest = pr; });
-  let base = null;
-  lista.filter(pr => pr.isFissa).forEach(pr => {
-    const dB = base ? (base.offerta.durata_mesi || 0) : -1, dP = pr.offerta.durata_mesi || 0;
-    if (!base || dP > dB || (dP === dB && pr.tot36 > base.tot36)) base = pr;
-  });
+  const varianti = lista.filter(pr => !pr.isFissa);
   let best = cheapest;
-  if (base && base !== cheapest && !(base.costo36 > cheapest.costo36 * (1 + SOGLIA_OFFERTA_INDICATA))) best = base;
+  if (varianti.length > 0) {
+    const base = varianti.reduce((a, b) => (b.costo36 < a.costo36 ? b : a));
+    // Sul PERIODO DEL FISSO (12, 24 o 36 mesi, per ogni fisso): costa meno del variabile di oltre il 10%? Fra più fissi vince il più lungo.
+    const passano = [];
+    lista.filter(pr => pr.isFissa).forEach(pr => {
+      const d = Math.min(pr.offerta.durata_mesi || 36, 36);
+      const cv = sommaCosto(base, 0, d), cf = sommaCosto(pr, 0, d);
+      if (cv > 0 && (cv - cf) > SOGLIA_OFFERTA_INDICATA * cv) passano.push({ pr, d, risp: cv - cf });
+    });
+    passano.sort((a, b) => (b.d - a.d) || (b.risp - a.risp));
+    best = passano.length > 0 ? passano[0].pr : base;
+  }
+  best.tutte = lista;
   best.perTranquillita = best !== cheapest;
   best.altExtra = best.perTranquillita ? best.costo36 - cheapest.costo36 : null;
   best.altTipoFissa = best.perTranquillita ? cheapest.isFissa : null;
@@ -2449,8 +2483,9 @@ function costruisciRiepilogoHtml() {
     ]);
     allegati += `<div${idx > 0 ? ' style="break-before:page;page-break-before:always;"' : ''}>
       <h2 style="margin-top:${idx > 0 ? 0 : 14}px;color:#2563eb;font-size:1.05rem;">${st.emoji} ${nomeC[c]} — allegati tecnici</h2>
+      ${tabellaConfrontoSito(pr, c)}
       ${bolletta}
-      <div style="break-inside:avoid;page-break-inside:avoid;">${tabOff}${tabRis}<div style="font-size:.7rem;color:#64748b;margin:-4px 0 8px;">Il segno − indica un risparmio rispetto a oggi, il segno + una spesa in più.</div>${disegnaGraficoRiepilogo(serie[c], st.um, pr.isFissa ? st.colFix : st.colVar, true)}</div>
+      <div style="break-inside:avoid;page-break-inside:avoid;">${tabOff}</div>
     </div>`;
   });
   const noteMet = `<p style="font-size:.78rem;color:#64748b;font-style:italic;line-height:1.6;margin:0 0 10px;">I valori riportati sono calcolati sulla base dei dati di mercato disponibili in data ${dataIt} e nell'ipotesi di invarianza delle condizioni di partenza (consumi dichiarati, categoria contrattuale, componenti regolate). Eventuali variazioni successive dei mercati energetici o dei dati di partenza possono determinare differenze rispetto ai valori riportati. Si riferiscono al solo costo della spesa per la materia energia elettrica e/o gas naturale, al netto di oneri di sistema, imposte e IVA. Nella consulenza verifichiamo il dato esatto sulla tua bolletta.</p>`;
