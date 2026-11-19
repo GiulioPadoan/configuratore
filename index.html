@@ -898,7 +898,7 @@ applicaBrowserInterno();
 const DOPO_TITOLO = 'Cosa succede dopo la firma';
 const DOPO_PUNTI = [
   'Un referente che conosci e che ti segue nel tempo, non un numero verde.',
-  'Ogni mese ricevi Nous, con cosa sta cambiando nel mercato e cosa ci aspettiamo.',
+  'Se entri nella community dei clienti, ogni mese ricevi Nous, con cosa sta cambiando nel mercato e cosa ci aspettiamo.',
   'Facciamo il punto sull\'offerta ogni anno, e ogni settimana la confrontiamo con le nostre altre offerte.'
 ];
 function riempiDopoBox() {
@@ -2173,8 +2173,8 @@ const DOPO_LA_FIRMA = {
 const DLF_AGENZIA = {
   analisi: 'Prima della firma guardiamo insieme i tuoi dati, in negozio, in sede, in videochiamata o al telefono, come preferisci.',
   condizioni: "Prima di firmare hai davanti tutte le condizioni, comprese quelle di uscita anticipata se l'offerta è a prezzo fisso.",
-  nous: 'Ogni mese ricevi Nous: cosa cambia nel mercato e cosa ci aspettiamo. Dopo la firma entri anche nella community dei clienti, senza obbligo.',
-  controllo: "Ogni settimana confrontiamo il tuo prezzo con le altre nostre offerte e ti scriviamo noi quando troviamo un'offerta più economica di almeno il 15%. Se hai il fisso, il prezzo resta bloccato per tutta la durata e le condizioni di uscita le conosci dalla firma. Ogni anno facciamo anche un check-in.",
+  nous: 'Dopo la firma puoi entrare nella community dei clienti, senza obbligo. Se entri, ogni mese ricevi Nous: cosa cambia nel mercato e cosa ci aspettiamo.',
+  controllo: "Ogni settimana confrontiamo il tuo prezzo con le altre nostre offerte e ti scriviamo noi quando troviamo un'offerta più economica di almeno il 15%. Se hai il fisso, il prezzo resta bloccato per tutta la durata e le condizioni di uscita le conosci dalla firma. Ogni anno facciamo anche il check-up.",
   chiusura: 'Nessuna fretta, decidi quando ti senti pronto.'
 };
 const DOPO_LA_FIRMA_VOCI = { attivazione: 'Tempi di attivazione (luce / gas)', come_si_firma: 'Come si firma', documenti: 'Documenti necessari', recesso: 'Recesso: preavviso e costi (fisso / variabile)', durata: 'Durata dell\'offerta variabile', scadenza_fisso: 'Cosa succede alla scadenza del fisso', chi_fattura: 'Chi fattura', prima_bolletta: 'Quando arriva la prima bolletta e cosa cambia' };
@@ -2320,7 +2320,8 @@ function costruisciRiepilogoHtml() {
   const fmt = v => Math.round(Math.abs(v)).toLocaleString('it-IT');
 
   // Preventivo valido fino a: scadenza più vicina delle offerte a prezzo fisso proposte
-  const scadenze = attive.map(c => dati[c].isFissa ? dataValidita(dati[c].offerta) : '').filter(Boolean).sort();
+  // Preventivo valido fino a: ultimo giorno di validità delle offerte fisse (la più vicina); vale come termine anche per le variabili.
+  const scadenze = attive.flatMap(c => getFissiCandidati(c, parseFloat(state[c + '_consumo_annuo'])).map(o => dataValidita(o))).filter(Boolean).sort();
   const [sy, sm, sg] = (scadenze[0] || '').split('-').map(Number);
   const scadenzaPrev = scadenze.length ? dataLungaIt(new Date(sy, sm - 1, sg)) : dataLungaIt(prossimoLunediRiepilogo());
   const serviziTxt = attive.map(c => nomeC[c]).join(' + ');
@@ -2496,6 +2497,7 @@ function costruisciRiepilogoHtml() {
       <div><span>Tipo di pratica</span><b>Cambio fornitore</b></div>
       <div><span>Preventivo valido fino a</span><b>${scadenzaPrev}</b></div>
     </div>
+    <div style="max-width:560px;margin:-10px auto 18px;font-size:.78rem;color:#64748b;text-align:center;">La data vale per tutte le offerte, anche a prezzo variabile.</div>
     ${costruisciTimelineInizioHtml(true)}
     <p class="come-cop">Nelle pagine seguenti troverai la nostra proposta migliore, <em>basata sulle bollette che ci hai fatto analizzare</em>. Nella parte Allegati tecnici troverai, diviso per Gas e Luce, i dati di mercato, i grafici e tutto ciò che abbiamo utilizzato per l'analisi che trovi in questo documento. Trovi anche cosa succede dopo la firma, cioè come ti seguiamo nel tempo.</p>
     <div class="cont-cop"><b>Il Tuo Consulente di Fiducia</b><br/>Giulio Padoan — 347 866 5252 — commerciale@iltuoconsulentedifiducia.com<br/>Arianna Zampieri — 349 857 0100 — clienti@iltuoconsulentedifiducia.com</div>
