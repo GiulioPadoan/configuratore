@@ -1,6 +1,6 @@
 {
   "_nota": "Dati di mercato pubblici (indici energia/gas). Aggiornati manualmente da Giulio ogni volta che arrivano nuovi dati. PUN/PSV/PSbil sono reali solo per i mesi già passati/assestati (0 = non ancora noto, i tool lo stimano dal TTF); il TTF è invece già disponibile in anticipo dai future. Nessun dato di margine o offerta qui. Dal 01/10/2026: sui mesi Apr2027-Dic2030 il campo ttf include un premio di rischio volatilità (vedi ttf_reale = valore originale del future, premio_rischio_pct = percentuale applicata) — ttf = ttf_reale * (1 + premio_rischio_pct/100). Tutto il resto (PUN/PSV/PSbil stimati, proiezioni, report) deriva da ttf e quindi eredita automaticamente il premio.",
-  "aggiornato_il": "2026-11-16",
+  "aggiornato_il": "2026-11-19",
   "pun_corrente": 0.26259,
   "psv_corrente": 0.9898439170408381,
   "psbil_corrente": 0.988454137267479,
@@ -9,7 +9,7 @@
   "psv_prev": 0,
   "cdispd": 0,
   "dispacciamento": 0,
-  "capacity_mkt": 0,
+  "capacity_mkt": 0.007193,
   "serie_storica": [
     {
       "mese": "Lug 2025",
@@ -225,7 +225,7 @@
       "ttf": 86.553,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.007193
     },
     {
       "mese": "Nov 2026",
@@ -237,7 +237,7 @@
       "ttf": 89.855,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.007193
     },
     {
       "mese": "Dic 2026",
@@ -249,7 +249,7 @@
       "ttf": 84.34,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492
+      "capacity_mkt": 0.007193
     },
     {
       "mese": "Gen 2027",
@@ -261,7 +261,7 @@
       "ttf": 96.864,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 84.23,
       "premio_rischio_pct": 15.0
     },
@@ -275,7 +275,7 @@
       "ttf": 96.215,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 83.665,
       "premio_rischio_pct": 15.0
     },
@@ -289,7 +289,7 @@
       "ttf": 92.834,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 80.725,
       "premio_rischio_pct": 15.0
     },
@@ -303,7 +303,7 @@
       "ttf": 81.426,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 70.805,
       "premio_rischio_pct": 15.0
     },
@@ -317,7 +317,7 @@
       "ttf": 76.711,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 66.705,
       "premio_rischio_pct": 15.0
     },
@@ -331,7 +331,7 @@
       "ttf": 74.244,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 64.56,
       "premio_rischio_pct": 15.0
     },
@@ -345,7 +345,7 @@
       "ttf": 73.123,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 63.585,
       "premio_rischio_pct": 15.0
     },
@@ -359,7 +359,7 @@
       "ttf": 72.001,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 62.61,
       "premio_rischio_pct": 15.0
     },
@@ -373,7 +373,7 @@
       "ttf": 72.818,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 63.32,
       "premio_rischio_pct": 15.0
     },
@@ -387,7 +387,7 @@
       "ttf": 70.892,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 61.645,
       "premio_rischio_pct": 15.0
     },
@@ -401,7 +401,7 @@
       "ttf": 69.914,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 60.795,
       "premio_rischio_pct": 15.0
     },
@@ -415,7 +415,7 @@
       "ttf": 69.345,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 60.3,
       "premio_rischio_pct": 15.0
     },
@@ -429,7 +429,7 @@
       "ttf": 68.485,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 59.625,
       "premio_rischio_pct": 14.86
     },
@@ -443,7 +443,7 @@
       "ttf": 66.882,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 58.3,
       "premio_rischio_pct": 14.72
     },
@@ -457,7 +457,7 @@
       "ttf": 64.024,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 55.877,
       "premio_rischio_pct": 14.58
     },
@@ -471,7 +471,7 @@
       "ttf": 60.703,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 42.435,
       "premio_rischio_pct": 14.44,
       "aggiustamento_pct": 25
@@ -486,7 +486,7 @@
       "ttf": 52.711,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 36.89,
       "premio_rischio_pct": 14.31,
       "aggiustamento_pct": 25
@@ -501,7 +501,7 @@
       "ttf": 52.475,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 36.77,
       "premio_rischio_pct": 14.17,
       "aggiustamento_pct": 25
@@ -516,7 +516,7 @@
       "ttf": 51.356,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 36.03,
       "premio_rischio_pct": 14.03,
       "aggiustamento_pct": 25
@@ -531,7 +531,7 @@
       "ttf": 50.959,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 35.795,
       "premio_rischio_pct": 13.89,
       "aggiustamento_pct": 25
@@ -546,7 +546,7 @@
       "ttf": 50.74,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 35.685,
       "premio_rischio_pct": 13.75,
       "aggiustamento_pct": 25
@@ -561,7 +561,7 @@
       "ttf": 50.571,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 35.61,
       "premio_rischio_pct": 13.61,
       "aggiustamento_pct": 25
@@ -576,7 +576,7 @@
       "ttf": 51.331,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 36.19,
       "premio_rischio_pct": 13.47,
       "aggiustamento_pct": 25
@@ -591,7 +591,7 @@
       "ttf": 52.337,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 36.945,
       "premio_rischio_pct": 13.33,
       "aggiustamento_pct": 25
@@ -606,7 +606,7 @@
       "ttf": 53.037,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 37.485,
       "premio_rischio_pct": 13.19,
       "aggiustamento_pct": 25
@@ -621,7 +621,7 @@
       "ttf": 52.403,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 37.08,
       "premio_rischio_pct": 13.06,
       "aggiustamento_pct": 25
@@ -636,7 +636,7 @@
       "ttf": 49.769,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 35.26,
       "premio_rischio_pct": 12.92,
       "aggiustamento_pct": 25
@@ -651,7 +651,7 @@
       "ttf": 41.036,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 29.109,
       "premio_rischio_pct": 12.78,
       "aggiustamento_pct": 25
@@ -666,7 +666,7 @@
       "ttf": 39.524,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 28.071,
       "premio_rischio_pct": 12.64,
       "aggiustamento_pct": 25
@@ -681,7 +681,7 @@
       "ttf": 38.51,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 27.385,
       "premio_rischio_pct": 12.5,
       "aggiustamento_pct": 25
@@ -696,7 +696,7 @@
       "ttf": 38.173,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 27.179,
       "premio_rischio_pct": 12.36,
       "aggiustamento_pct": 25
@@ -711,7 +711,7 @@
       "ttf": 37.957,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 27.059,
       "premio_rischio_pct": 12.22,
       "aggiustamento_pct": 25
@@ -726,7 +726,7 @@
       "ttf": 38.148,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 27.229,
       "premio_rischio_pct": 12.08,
       "aggiustamento_pct": 25
@@ -741,7 +741,7 @@
       "ttf": 38.717,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 27.67,
       "premio_rischio_pct": 11.94,
       "aggiustamento_pct": 25
@@ -756,7 +756,7 @@
       "ttf": 39.372,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 28.171,
       "premio_rischio_pct": 11.81,
       "aggiustamento_pct": 25
@@ -771,7 +771,7 @@
       "ttf": 40.038,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 28.683,
       "premio_rischio_pct": 11.67,
       "aggiustamento_pct": 25
@@ -786,7 +786,7 @@
       "ttf": 39.897,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 28.618,
       "premio_rischio_pct": 11.53,
       "aggiustamento_pct": 25
@@ -801,7 +801,7 @@
       "ttf": 39.726,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 28.531,
       "premio_rischio_pct": 11.39,
       "aggiustamento_pct": 25
@@ -816,7 +816,7 @@
       "ttf": 39.124,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 28.134,
       "premio_rischio_pct": 11.25,
       "aggiustamento_pct": 25
@@ -831,7 +831,7 @@
       "ttf": 36.864,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 26.542,
       "premio_rischio_pct": 11.11,
       "aggiustamento_pct": 25
@@ -846,7 +846,7 @@
       "ttf": 36.339,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 26.197,
       "premio_rischio_pct": 10.97,
       "aggiustamento_pct": 25
@@ -861,7 +861,7 @@
       "ttf": 35.849,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 25.877,
       "premio_rischio_pct": 10.83,
       "aggiustamento_pct": 25
@@ -876,7 +876,7 @@
       "ttf": 33.819,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 24.442,
       "premio_rischio_pct": 10.69,
       "aggiustamento_pct": 25
@@ -891,7 +891,7 @@
       "ttf": 34.256,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 24.787,
       "premio_rischio_pct": 10.56,
       "aggiustamento_pct": 25
@@ -906,7 +906,7 @@
       "ttf": 35.054,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 25.397,
       "premio_rischio_pct": 10.42,
       "aggiustamento_pct": 25
@@ -921,7 +921,7 @@
       "ttf": 35.884,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 26.031,
       "premio_rischio_pct": 10.28,
       "aggiustamento_pct": 25
@@ -936,7 +936,7 @@
       "ttf": 36.926,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 26.821,
       "premio_rischio_pct": 10.14,
       "aggiustamento_pct": 25
@@ -951,7 +951,7 @@
       "ttf": 37.525,
       "cdispd": 0.014642,
       "dispacciamento": 0.009888,
-      "capacity_mkt": 0.013492,
+      "capacity_mkt": 0.007193,
       "ttf_reale": 27.291,
       "premio_rischio_pct": 10.0,
       "aggiustamento_pct": 25
@@ -971,7 +971,8 @@
     "capacity_mkt": {
       "2025-T3": 0.00555,
       "2025-T4": 0.01035,
-      "2026-T2": 0.005589
+      "2026-T2": 0.005589,
+      "2026-T4": 0.007193
     }
   },
   "capacity_terna": {
