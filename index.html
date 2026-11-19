@@ -1943,8 +1943,8 @@ function sommaCosto(pr, a, b) {
 }
 // Regola dell'offerta indicata (19/11/2026, decisione di Giulio): base = la VARIABILE (che costa meno sui 36 mesi).
 // Un'offerta a prezzo fisso viene indicata solo se, sul PERIODO DEL FISSO (12/24/36 mesi), costa meno della variabile di
-// oltre il 10% del costo totale della variabile in quel periodo; fra più fissi vince il più lungo. Senza variabile vale l'offerta che costa meno.
-const SOGLIA_OFFERTA_INDICATA = 0.10;
+// oltre il 5% del costo totale della variabile in quel periodo; fra più fissi vince il più lungo. Senza variabile vale l'offerta che costa meno.
+const SOGLIA_OFFERTA_INDICATA = 0.05;
 // Costo di quello che il cliente paga oggi, sulla stessa proiezione (per la tabella di confronto negli allegati).
 function sommaCostoAttuale(pr, a, b) {
   const w0 = pr.w0 == null ? 1 : pr.w0;
