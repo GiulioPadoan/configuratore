@@ -1941,11 +1941,8 @@ function sommaCosto(pr, a, b) {
     return tot + m.costoNostro * peso;
   }, 0);
 }
-// Regola dell'offerta indicata (19/11/2026, decisione di Giulio): base = la VARIABILE (che costa meno sui 36 mesi).
-// Un'offerta a prezzo fisso viene indicata solo se, sul PERIODO DEL FISSO (12/24/36 mesi), costa meno della variabile di
-// oltre il 5% del costo totale della variabile in quel periodo; fra più fissi vince il più lungo. Senza variabile vale l'offerta che costa meno.
-const SOGLIA_OFFERTA_INDICATA = 0.05;
-// Costo di quello che il cliente paga oggi, sulla stessa proiezione (per la tabella di confronto negli allegati).
+// Regola dell'offerta indicata (20/11/2026): vedi calcolaProiezioneSito, vince l'offerta con il risparmio più alto nei 36 mesi.
+// Costo di quello che il cliente paga oggi, sulla stessa proiezione (per la tabella di confronto nella pagina della soluzione migliore).
 function sommaCostoAttuale(pr, a, b) {
   const w0 = pr.w0 == null ? 1 : pr.w0;
   return pr.mesi.reduce((tot, m, i) => {
@@ -1954,24 +1951,41 @@ function sommaCostoAttuale(pr, a, b) {
     return tot + m.costoAttuale * peso;
   }, 0);
 }
-// Tabella di confronto negli allegati (19/11/2026): una riga per offerta, spesa dei tre anni e totale a 36 mesi.
+// Tabella di confronto (20/11/2026): sta nella pagina "La soluzione migliore per Te", una per luce e una per gas.
+// Una riga per offerta: spesa dei tre anni e totale a 36 mesi. La riga dell'offerta indicata (pr) è evidenziata.
 function tabellaConfrontoSito(pr, c) {
   const euro = v => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
   const anni = (fn) => { const c12 = fn(0, 12), c24 = fn(0, 24), c36 = fn(0, 36); return [c12, c24 - c12, c36 - c24, c36]; };
   const righe = [{ nome: 'Il tuo prezzo di oggi', v: anni((a, b) => sommaCostoAttuale(pr, a, b)), attuale: true }];
   (pr.tutte || [pr]).forEach(p => {
     const o = p.offerta;
-    const tipoTxt = p.isFissa ? 'prezzo fisso, ' + o.durata_mesi + ' mesi' : 'prezzo variabile';
-    righe.push({ nome: o.fornitore + ' — ' + o.nome + ' (' + tipoTxt + ')', v: anni((a, b) => sommaCosto(p, a, b)) });
+    righe.push({ forn: o.fornitore, nome: o.nome, tipoTxt: p.isFissa ? 'prezzo fisso, ' + o.durata_mesi + ' mesi' : 'prezzo variabile', indicata: p === pr, v: anni((a, b) => sommaCosto(p, a, b)) });
   });
-  const celle = v => v.map((x, i) => `<td style="text-align:right;white-space:nowrap;${i === 3 ? 'font-weight:700;' : ''}">${euro(x)}</td>`).join('');
-  return `<div style="margin:6px 0 14px;break-inside:avoid;page-break-inside:avoid;">
-    <h3 style="font-size:.98rem;color:#0f172a;margin:0 0 6px;">Confronto delle offerte: spesa nei prossimi 36 mesi</h3>
-    <table class="rt" style="margin:0;"><thead><tr><th style="text-align:left;">Offerta</th><th style="text-align:right;">Anno 1</th><th style="text-align:right;">Anno 2</th><th style="text-align:right;">Anno 3</th><th style="text-align:right;">Totale 36 mesi</th></tr></thead>
-    <tbody>${righe.map(r => `<tr${r.attuale ? ' style="background:#f1f5f9;"' : ''}><td style="text-align:left;font-weight:400;">${r.nome}</td>${celle(r.v)}</tr>`).join('')}</tbody></table>
+  const verde = '#16a34a';
+  const riga = r => {
+    const forte = r.indicata;
+    const bordo = forte ? `border-top:2px solid ${verde};border-bottom:2px solid ${verde};` : 'border-bottom:1px solid #e2e8f0;';
+    const sfondo = r.attuale ? 'background:#f1f5f9;' : (forte ? 'background:#ecfdf5;' : '');
+    const cella = (x, i) => `<td style="text-align:right;white-space:nowrap;padding:7px 8px;${bordo}${sfondo}${(forte || i === 3) ? 'font-weight:700;' : ''}${forte ? 'color:#14532d;' : ''}${(forte && i === 3) ? `border-right:2px solid ${verde};` : ''}">${euro(x)}</td>`;
+    const nome = r.attuale
+      ? `<td style="text-align:left;padding:7px 8px;${bordo}${sfondo}color:#475569;">Il tuo prezzo di oggi</td>`
+      : `<td style="text-align:left;padding:7px 8px;${bordo}${sfondo}${forte ? `border-left:2px solid ${verde};` : ''}">
+          <div style="${forte ? 'font-weight:700;color:#14532d;' : 'font-weight:600;color:#0f172a;'}">${r.forn} — ${r.nome}</div>
+          <div style="font-size:.72rem;color:${forte ? '#166534' : '#64748b'};">${r.tipoTxt}</div>
+          ${forte ? `<span style="display:inline-block;margin-top:3px;font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;background:${verde};color:#fff;padding:2px 9px;">La nostra indicazione</span>` : ''}
+        </td>`;
+    return `<tr>${nome}${r.v.map(cella).join('')}</tr>`;
+  };
+  const th = (x, dx) => `<th style="text-align:${dx ? 'right' : 'left'};font-size:.74rem;font-weight:600;color:#475569;padding:5px 8px;border-bottom:1px solid #cbd5e1;">${x}</th>`;
+  return `<div style="margin:0 0 4px;break-inside:avoid;page-break-inside:avoid;">
+    <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+      <thead><tr>${th('Offerta')}${th('Anno 1', 1)}${th('Anno 2', 1)}${th('Anno 3', 1)}${th('Totale 36 mesi', 1)}</tr></thead>
+      <tbody>${righe.map(riga).join('')}</tbody>
+    </table>
     <div style="font-size:.7rem;color:#64748b;line-height:1.5;margin-top:5px;">Spesa per la materia ${c === 'luce' ? 'energia' : 'gas'} e la quota fissa, sui dati di mercato di oggi; al netto di oneri di sistema, trasporto, imposte e IVA. Dal secondo anno in poi sono stime.</div>
   </div>`;
 }
+
 function calcolaProiezioneSito(commodity) {
   const consumoAnnuo = parseFloat(state[commodity + '_consumo_annuo']);
   if (isNaN(consumoAnnuo)) return null;
@@ -1986,21 +2000,9 @@ function calcolaProiezioneSito(commodity) {
   });
   if (lista.length === 0) return null;
   let cheapest = null;
-  lista.forEach(pr => { if (!cheapest || pr.tot36 > cheapest.tot36 + 0.005) cheapest = pr; });
-  const varianti = lista.filter(pr => !pr.isFissa);
-  let best = cheapest;
-  if (varianti.length > 0) {
-    const base = varianti.reduce((a, b) => (b.costo36 < a.costo36 ? b : a));
-    // Sul PERIODO DEL FISSO (12, 24 o 36 mesi, per ogni fisso): costa meno del variabile di oltre il 10%? Fra più fissi vince il più lungo.
-    const passano = [];
-    lista.filter(pr => pr.isFissa).forEach(pr => {
-      const d = Math.min(pr.offerta.durata_mesi || 36, 36);
-      const cv = sommaCosto(base, 0, d), cf = sommaCosto(pr, 0, d);
-      if (cv > 0 && (cv - cf) > SOGLIA_OFFERTA_INDICATA * cv) passano.push({ pr, d, risp: cv - cf });
-    });
-    passano.sort((a, b) => (b.d - a.d) || (b.risp - a.risp));
-    best = passano.length > 0 ? passano[0].pr : base;
-  }
+  // Regola 20/11/2026: indicata = l'offerta con il risparmio più alto nei 36 mesi (nessuna soglia); a parità la durata più breve.
+  lista.forEach(pr => { if (!cheapest || pr.tot36 > cheapest.tot36 + 0.5 || (Math.abs(pr.tot36 - cheapest.tot36) <= 0.5 && (pr.offerta.durata_mesi || 0) < (cheapest.offerta.durata_mesi || 0))) cheapest = pr; });
+  const best = cheapest;
   best.tutte = lista;
   best.perTranquillita = best !== cheapest;
   best.altExtra = best.perTranquillita ? best.costo36 - cheapest.costo36 : null;
@@ -2362,25 +2364,10 @@ function costruisciRiepilogoHtml() {
 
   // ── pagina 2: la soluzione migliore ──
   let cards = '';
-  const serie = {};
   attive.forEach(c => {
     const pr = dati[c], o = pr.offerta, st = stile[c];
-    const sMesi = pr.mesi.map((m, i) => ({ mese: m.mese, attuale: m.attuale, nostro: m.nostro, fissoScaduto: !!(pr.isFissa && i >= o.durata_mesi + (pr.w0 < 1 ? 1 : 0)) }));
-    serie[c] = sMesi;
-    const colore = pr.isFissa ? st.colFix : st.colVar;
-    const risparmia = pr.tot36 > 0;
     const um = c === 'luce' ? 'kWh' : 'Smc';
     const molt = c === 'luce' ? FATTORE_PERDITE_RETE_LUCE : 1;
-    const tipoTxt = pr.isFissa ? 'prezzo fisso, ' + o.durata_mesi + ' mesi' : 'prezzo variabile';
-    const rigaGrande = `<div style="margin:8px 0 2px;font-size:1rem;font-weight:700;color:#334155;white-space:nowrap;">${risparmia ? 'Risparmio stimato nei prossimi 36 mesi' : 'Spesa in più stimata nei prossimi 36 mesi'}: <span style="font-size:1.8rem;font-weight:800;color:${risparmia ? '#15803d' : '#b91c1c'};vertical-align:-2px;">${risparmia ? '' : '+ '}${fmt(pr.tot36)} €</span></div>`;
-    let rigaFisso = '';
-    if (pr.isFissa && o.durata_mesi > 0) {
-      const nF = Math.min(o.durata_mesi, 36);
-      const risF = sommaMesi(pr, 0, nF);
-      if (risF <= 0) rigaFisso = `<div style="font-size:.88rem;color:#334155;margin:2px 0 4px;">La scelta del prezzo fisso per ${o.durata_mesi} mesi comporta un costo maggiore, rispetto all'attuale offerta, di <strong>${fmt(-risF / nF)} €/mese</strong>.</div>`;
-    }
-    const testoAlt = fraseAlternativa(pr, v => fmt(v) + ' €');
-    const rigaAlt = testoAlt ? `<div style="font-size:.84rem;color:#334155;margin:2px 0 4px;">${testoAlt}</div>` : '';
     const validita = (pr.isFissa && dataValidita(o)) ? `<div style="font-size:.8rem;color:#475569;margin-top:6px;">${testoValidita(o)}.</div>` : '';
     const pcvTxt = 'Quota fissa (PCV): ' + fmtIt(o.pcv_anno, 2) + ' €/anno (' + fmtIt(o.pcv_anno / 12, 2) + ' €/mese)';
     const prezzoTxt = pr.isFissa
@@ -2393,13 +2380,10 @@ function costruisciRiepilogoHtml() {
         ? flagRiepilogo('Il cambio piano con lo stesso operatore è sempre consentito, senza alcuna penale.', "L'Onere di recesso anticipato si applica esclusivamente in caso di cambio fornitore." + (o.nota_uscita ? ' ' + o.nota_uscita : ''))
         : flagRiepilogo('Nessun onere di recesso anticipato.', o.nota_uscita || '');
     }
-    const nota = risparmia ? '' : `<div style="font-size:.8rem;color:#475569;margin-top:6px;">Sui dati di mercato di oggi nessuna offerta in selezione costa meno di quanto paghi adesso: questa è la più vicina.</div>`;
-    cards += `<div style="border:1px solid ${st.bordo}33;border-left:6px solid ${st.bordo};background:${st.sfondo};border-radius:12px;padding:10px 18px;margin-bottom:10px;break-inside:avoid;page-break-inside:avoid;">
-      <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${st.et};margin-bottom:3px;">${st.emoji} ${nomeC[c]} — la nostra indicazione</div>
-      <div style="font-size:1.12rem;font-weight:800;color:#0f172a;">${o.fornitore} — ${o.nome} <span style="display:inline-block;font-size:.72rem;font-weight:700;border-radius:99px;background:#fff;border:1px solid #cbd5e1;padding:2px 10px;margin-left:6px;vertical-align:middle;color:#334155;">${tipoTxt}</span></div>
-      ${conv}${rigaGrande}${rigaFisso}${rigaAlt}
-      ${disegnaGraficoRiepilogo(sMesi, st.um, colore, true)}
-      ${nota}${validita}
+    cards += `<div style="border:1px solid ${st.bordo}33;border-left:6px solid ${st.bordo};background:#fff;border-radius:12px;padding:10px 16px 12px;margin-bottom:12px;break-inside:avoid;page-break-inside:avoid;">
+      <div style="font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${st.et};margin-bottom:6px;">${st.emoji} ${nomeC[c]}: spesa nei prossimi 36 mesi</div>
+      ${tabellaConfrontoSito(pr, c)}
+      ${conv}${validita}
       <div style="font-size:.8rem;color:#475569;margin-top:${validita ? '2' : '6'}px;">${pcvTxt} · ${prezzoTxt}.</div>
       ${flag}
     </div>`;
@@ -2421,8 +2405,7 @@ function costruisciRiepilogoHtml() {
   const riga = (n, t) => `<div style="display:flex;align-items:center;gap:16px;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:.85rem;color:#1e293b;break-inside:avoid;"><div style="flex:1;"><strong>${n}.</strong> ${t}</div><div style="flex:none;width:96px;text-align:right;white-space:nowrap;color:#475569;">☐ Sì &nbsp;&nbsp; ☐ No</div></div>`;
   const SERV = { servizio_q1: ['👤', 'Referente dedicato', 'Una sola persona segue la tua pratica.'], servizio_q2: ['🛡️', 'Numero unico anti-truffa', 'Solo i nostri recapiti parlano del tuo contratto.'],
     servizio_q3: ['🏬', 'Store fisico', 'Negli orari di apertura, meglio su appuntamento, a Santa Maria di Zevio.'], servizio_q4: ['📈', 'Aggiornamento mensile sui mercati', 'Un report chiaro sui mercati, ogni mese.'], servizio_controllo: ['📊', 'Controllo settimanale dell\'offerta', 'Ogni settimana confrontiamo il tuo prezzo con le altre nostre offerte.'], servizio_q5: ['✅', 'Check annuale della fornitura', 'Ogni anno verifichiamo se è ancora la scelta migliore.'] };
-  // servizio_controllo (ver2.37) non dipende dalle risposte: c'è sempre, subito prima del check annuale.
-  const siK = Object.keys(SERV).filter(k => k === 'servizio_controllo' || state[k] === 'si');
+  const siK = Object.keys(SERV); // dal 20/11/2026 tutti i servizi sono sempre visibili
   const serviziHtml = siK.length
     ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:.8rem;">${siK.map(k => `<div style="display:flex;gap:8px;"><span style="font-size:1.1rem;line-height:1.3;">${SERV[k][0]}</span><span><strong style="display:block;">${SERV[k][1]}</strong><span style="color:#475569;">${SERV[k][2]}</span></span></div>`).join('')}</div>`
     : '<p style="font-size:.85rem;color:#475569;">Un referente dedicato ti segue in ogni fase, con assistenza continua della nostra Agenzia.</p>';
@@ -2483,7 +2466,6 @@ function costruisciRiepilogoHtml() {
     ]);
     allegati += `<div${idx > 0 ? ' style="break-before:page;page-break-before:always;"' : ''}>
       <h2 style="margin-top:${idx > 0 ? 0 : 14}px;color:#2563eb;font-size:1.05rem;">${st.emoji} ${nomeC[c]} — allegati tecnici</h2>
-      ${tabellaConfrontoSito(pr, c)}
       ${bolletta}
       <div style="break-inside:avoid;page-break-inside:avoid;">${tabOff}</div>
     </div>`;
