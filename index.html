@@ -2004,18 +2004,7 @@ function calcolaProiezioneSito(commodity) {
   lista.forEach(pr => { if (!cheapest || pr.tot36 > cheapest.tot36 + 0.5 || (Math.abs(pr.tot36 - cheapest.tot36) <= 0.5 && (pr.offerta.durata_mesi || 0) < (cheapest.offerta.durata_mesi || 0))) cheapest = pr; });
   const best = cheapest;
   best.tutte = lista;
-  best.perTranquillita = best !== cheapest;
-  best.altExtra = best.perTranquillita ? best.costo36 - cheapest.costo36 : null;
-  best.altTipoFissa = best.perTranquillita ? cheapest.isFissa : null;
-  best.altNome = best.perTranquillita ? cheapest.offerta.nome : null;
   return best;
-}
-// Frase sul costo dell'alternativa più economica, quando l'indicazione è il prezzo fisso (stessa del Qualifica).
-function fraseAlternativa(pr, eurFmt) {
-  if (!pr || !pr.perTranquillita || pr.altExtra == null || pr.altExtra <= 0) return '';
-  return pr.altTipoFissa
-    ? `L'offerta ${pr.altNome} (prezzo fisso) costa circa ${eurFmt(pr.altExtra)} in meno nei 36 mesi.`
-    : `Oggi il prezzo variabile costa circa ${eurFmt(pr.altExtra)} in meno nei 36 mesi, ma segue il mercato e non sai in anticipo quanto pagherai.`;
 }
 function calcolaRisparmioSito(commodity, nMesi) {
   const pr = calcolaProiezioneSito(commodity);
@@ -2092,7 +2081,6 @@ function mostraRisparmioStimatoInterno() {
       ${(convenzione && !o.convenzione) ? `<div class="risultato-dettaglio">Convenzione ${convenzione.nome}: condizioni non applicabili ai consumi indicati, confronto con l'offerta standard.</div>` : ''}
       ${validitaHtml}
       <div class="risultato-dettaglio">${dettaglioPrezzo} · quota fissa ${o.pcv_anno.toFixed(0)} €/anno (${(o.pcv_anno/12).toFixed(2).replace('.', ',')} €/mese)</div>
-      ${fraseAlternativa(pr, eur) ? `<div class="risultato-dettaglio">${fraseAlternativa(pr, eur)}</div>` : ''}
       ${riga('Prossimi 12 mesi', v12)}
       ${v36 !== null ? riga('Prossimi 36 mesi', v36) : ''}
       ${vincoloHtml}
@@ -2143,45 +2131,6 @@ function prossimoLunediRiepilogo() {
   const d = new Date(); d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() + ((8 - d.getDay()) % 7 || 7));
   return d;
-}
-
-// Grafico: prezzo mese per mese di "attuale" contro la nostra offerta (36 mesi).
-function disegnaGraficoRiepilogo(mesi, unitLabel, colore, compatto) {
-  const W = 640, H = compatto ? 128 : 190, padL = 52, padR = 16, padT = 16, padB = 34;
-  const innerW = W - padL - padR, innerH = H - padT - padB;
-  const tutti = [];
-  mesi.forEach(p => { tutti.push(p.attuale, p.nostro); });
-  if (tutti.length === 0) return '';
-  const minV = Math.min(...tutti), maxV = Math.max(...tutti);
-  const margine = (maxV - minV) * 0.12 || Math.abs(minV) * 0.05 || 0.01;
-  const yMin = minV - margine, yMax = maxV + margine;
-  const xPos = i => padL + (innerW * i / Math.max(mesi.length - 1, 1));
-  const yPos = v => padT + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
-  const linea = (campo, col) => `<polyline points="${mesi.map((p, i) => xPos(i).toFixed(1) + ',' + yPos(p[campo]).toFixed(1)).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;">`;
-  for (let g = 0; g <= 4; g++) {
-    const val = yMin + (yMax - yMin) * g / 4, yy = yPos(val);
-    svg += `<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W - padR}" y2="${yy.toFixed(1)}" stroke="#e2e8f0" stroke-width="1"/>`;
-    svg += `<text x="${padL - 6}" y="${(yy + 3).toFixed(1)}" font-size="9" text-anchor="end" fill="#64748b">${val.toFixed(3)}</text>`;
-  }
-  const iStima = mesi.findIndex((p, i) => i >= 12);
-  if (iStima > 0) svg += `<line x1="${xPos(iStima - 0.5).toFixed(1)}" y1="${padT}" x2="${xPos(iStima - 0.5).toFixed(1)}" y2="${H - padB}" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,3"/>`;
-  const iScad = mesi.findIndex(p => p.fissoScaduto);
-  if (iScad > 0) svg += `<line x1="${xPos(iScad - 0.5).toFixed(1)}" y1="${padT}" x2="${xPos(iScad - 0.5).toFixed(1)}" y2="${H - padB}" stroke="#16a34a" stroke-width="1" stroke-dasharray="2,3"/>`;
-  const step = mesi.length > 15 ? 3 : 1;
-  mesi.forEach((p, i) => { if (i % step === 0 || i === mesi.length - 1) svg += `<text x="${xPos(i).toFixed(1)}" y="${H - padB + 16}" font-size="8" text-anchor="middle" fill="#64748b">${p.mese.split(' ')[0]}</text>`; });
-  svg += linea('attuale', '#94a3b8') + linea('nostro', colore) + '</svg>';
-  const notaStima = iStima > 0 ? `<div style="font-size:.68rem;color:#b45309;text-align:center;margin-top:6px;">Dal mese ${iStima + 1} in poi (linea tratteggiata grigia) i valori sono <strong>stime</strong> basate sul TTF, non dati di mercato assestati.</div>` : '';
-  const notaScad = iScad > 0 ? `<div style="font-size:.68rem;color:#166534;text-align:center;margin-top:6px;">Dal mese ${iScad + 1} in poi (linea tratteggiata verde) il prezzo fisso è scaduto: il prezzo indicato segue l'indicizzazione di rientro (indice di mercato + spread), non è più bloccato.</div>` : '';
-  return `<div style="margin:${compatto ? '8px 0' : '12px 0'};background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:${compatto ? '8px 12px' : '12px'};">
-    ${svg}
-    <div style="display:flex;gap:16px;justify-content:center;margin-top:6px;font-size:.72rem;">
-      <span><span style="display:inline-block;width:10px;height:10px;background:#94a3b8;border-radius:2px;margin-right:4px;"></span>Attuale</span>
-      <span><span style="display:inline-block;width:10px;height:10px;background:${colore};border-radius:2px;margin-right:4px;"></span>Con la nostra offerta</span>
-    </div>
-    ${compatto ? '' : `<div style="font-size:.68rem;color:#94a3b8;text-align:center;margin-top:6px;">Prezzo ${unitLabel} della sola quota per consumi, mese per mese</div>`}
-    ${notaStima}${notaScad}
-  </div>`;
 }
 
 // ═══════════════════════════════════════════
